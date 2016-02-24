@@ -1,6 +1,6 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/mySports              ->  index
+ * GET     /api/mySports/mine              ->  mine
  * POST    /api/mySports              ->  create
  * GET     /api/mySports/:id          ->  show
  * PUT     /api/mySports/:id          ->  update
@@ -10,19 +10,27 @@
 'use strict';
 
 import _ from 'lodash';
+import Sport from '../sport/sport.model';
 import MySport from './mySport.model';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       res.status(statusCode).json(entity);
     }
   };
 }
 
+function validationError(res, statusCode) {
+  statusCode = statusCode || 422;
+  return function (err) {
+    res.status(statusCode).json(err);
+  }
+}
+
 function saveUpdates(updates) {
-  return function(entity) {
+  return function (entity) {
     var updated = _.merge(entity, updates);
     return updated.saveAsync()
       .spread(updated => {
@@ -32,7 +40,7 @@ function saveUpdates(updates) {
 }
 
 function removeEntity(res) {
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       return entity.removeAsync()
         .then(() => {
@@ -43,7 +51,7 @@ function removeEntity(res) {
 }
 
 function handleEntityNotFound(res) {
-  return function(entity) {
+  return function (entity) {
     if (!entity) {
       res.status(404).end();
       return null;
@@ -54,49 +62,67 @@ function handleEntityNotFound(res) {
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }
 
 // Gets a list of MySports
-export function index(req, res) {
-  MySport.findAsync()
-    .then(respondWithResult(res))
+export function mine(req, res) {
+  var userId = req.user._id;
+  MySport.find({
+      user: userId
+    })
+    .populate('sport')
+    .execAsync()
+    .then((mySports) => {
+      var sports = [];
+      for (var i = mySports.length - 1; i >= 0; i--) {
+        sports.push(mySports[i].sport);
+      }
+      respondWithResult(res)(sports);
+    })
     .catch(handleError(res));
 }
 
-// Gets a single MySport from the DB
-export function show(req, res) {
-  MySport.findByIdAsync(req.params.id)
+export function select(req, res) {
+  var userId = req.user._id;
+  var sportId = req.params.sportId;
+
+  Sport.findByIdAsync(sportId)
     .then(handleEntityNotFound(res))
-    .then(respondWithResult(res))
+    .then((sport) => {
+      MySport.findOneAsync({
+          user: userId,
+          sport: sportId
+        })
+        .then((mySport) => {
+          console.log('select : ' + mySport)
+          if (mySport) {
+            respondWithResult(res, 304)(mySport);
+          } else {
+            var mySport = new MySport({
+              user: userId,
+              sport: sportId
+            });
+            mySport.saveAsync()
+              .then(respondWithResult(res))
+              .catch(validationError(res));
+          }
+        })
+        .catch(handleError(res));
+    })
     .catch(handleError(res));
 }
 
-// Creates a new MySport in the DB
-export function create(req, res) {
-  MySport.createAsync(req.body)
-    .then(respondWithResult(res, 201))
-    .catch(handleError(res));
-}
+export function unselect(req, res) {
+  var userId = req.user._id;
+  var sportId = req.params.sportId;
 
-// Updates an existing MySport in the DB
-export function update(req, res) {
-  if (req.body._id) {
-    delete req.body._id;
-  }
-  MySport.findByIdAsync(req.params.id)
-    .then(handleEntityNotFound(res))
-    .then(saveUpdates(req.body))
-    .then(respondWithResult(res))
-    .catch(handleError(res));
-}
-
-// Deletes a MySport from the DB
-export function destroy(req, res) {
-  MySport.findByIdAsync(req.params.id)
-    .then(handleEntityNotFound(res))
+  MySport.findOneAsync({
+      user: userId,
+      sport: sportId
+    })
     .then(removeEntity(res))
     .catch(handleError(res));
 }

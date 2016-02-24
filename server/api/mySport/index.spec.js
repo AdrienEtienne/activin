@@ -3,11 +3,18 @@
 var proxyquire = require('proxyquire').noPreserveCache();
 
 var mySportCtrlStub = {
-  index: 'mySportCtrl.index',
-  show: 'mySportCtrl.show',
-  create: 'mySportCtrl.create',
-  update: 'mySportCtrl.update',
-  destroy: 'mySportCtrl.destroy'
+  mine: 'mySportCtrl.mine',
+  select: 'mySportCtrl.select',
+  unselect: 'mySportCtrl.unselect'
+};
+
+var authServiceStub = {
+  isAuthenticated() {
+      return 'authService.isAuthenticated';
+    },
+    hasRole(role) {
+      return 'authService.hasRole.' + role;
+    }
 };
 
 var routerStub = {
@@ -21,77 +28,78 @@ var routerStub = {
 // require the index with our stubbed out modules
 var mySportIndex = proxyquire('./index.js', {
   'express': {
-    Router: function() {
+    Router: function () {
       return routerStub;
     }
   },
-  './mySport.controller': mySportCtrlStub
+  './mySport.controller': mySportCtrlStub,
+  '../../auth/auth.service': authServiceStub
 });
 
-describe('MySport API Router:', function() {
+describe('MySport API Router:', function () {
 
-  it('should return an express router instance', function() {
+  it('should return an express router instance', function () {
     mySportIndex.should.equal(routerStub);
   });
 
-  describe('GET /api/mySports', function() {
+  describe('GET /api/mySports/mine', function () {
 
-    it('should route to mySport.controller.index', function() {
+    it('should route to mySport.controller.mine', function () {
       routerStub.get
-        .withArgs('/', 'mySportCtrl.index')
+        .withArgs('/mine', 'authService.isAuthenticated', 'mySportCtrl.mine')
         .should.have.been.calledOnce;
     });
 
   });
+  /*
+    describe('GET /api/mySports/:id', function () {
 
-  describe('GET /api/mySports/:id', function() {
+      it('should route to mySport.controller.show', function () {
+        routerStub.get
+          .withArgs('/:id', 'mySportCtrl.show')
+          .should.have.been.calledOnce;
+      });
 
-    it('should route to mySport.controller.show', function() {
-      routerStub.get
-        .withArgs('/:id', 'mySportCtrl.show')
-        .should.have.been.calledOnce;
     });
 
-  });
+    describe('POST /api/mySports', function () {
 
-  describe('POST /api/mySports', function() {
+      it('should route to mySport.controller.create', function () {
+        routerStub.post
+          .withArgs('/', 'mySportCtrl.create')
+          .should.have.been.calledOnce;
+      });
 
-    it('should route to mySport.controller.create', function() {
-      routerStub.post
-        .withArgs('/', 'mySportCtrl.create')
-        .should.have.been.calledOnce;
     });
 
-  });
+    describe('PUT /api/mySports/:id', function () {
 
-  describe('PUT /api/mySports/:id', function() {
+      it('should route to mySport.controller.update', function () {
+        routerStub.put
+          .withArgs('/:id', 'mySportCtrl.update')
+          .should.have.been.calledOnce;
+      });
 
-    it('should route to mySport.controller.update', function() {
-      routerStub.put
-        .withArgs('/:id', 'mySportCtrl.update')
-        .should.have.been.calledOnce;
     });
 
-  });
+    describe('PATCH /api/mySports/:id', function () {
 
-  describe('PATCH /api/mySports/:id', function() {
+      it('should route to mySport.controller.update', function () {
+        routerStub.patch
+          .withArgs('/:id', 'mySportCtrl.update')
+          .should.have.been.calledOnce;
+      });
 
-    it('should route to mySport.controller.update', function() {
-      routerStub.patch
-        .withArgs('/:id', 'mySportCtrl.update')
-        .should.have.been.calledOnce;
     });
 
-  });
+    describe('DELETE /api/mySports/:id', function () {
 
-  describe('DELETE /api/mySports/:id', function() {
+      it('should route to mySport.controller.destroy', function () {
+        routerStub.delete
+          .withArgs('/:id', 'mySportCtrl.destroy')
+          .should.have.been.calledOnce;
+      });
 
-    it('should route to mySport.controller.destroy', function() {
-      routerStub.delete
-        .withArgs('/:id', 'mySportCtrl.destroy')
-        .should.have.been.calledOnce;
     });
-
-  });
-
+  */
 });

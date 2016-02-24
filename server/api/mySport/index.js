@@ -2,14 +2,12 @@
 
 var express = require('express');
 var controller = require('./mySport.controller');
+import * as auth from '../../auth/auth.service';
 
 var router = express.Router();
 
-router.get('/', controller.index);
-router.get('/:id', controller.show);
-router.post('/', controller.create);
-router.put('/:id', controller.update);
-router.patch('/:id', controller.update);
-router.delete('/:id', controller.destroy);
+router.get('/mine', auth.isAuthenticated(), controller.mine);
+router.post('/select/:sportId', auth.isAuthenticated(), controller.select);
+router.post('/unselect/:sportId', auth.isAuthenticated(), controller.unselect);
 
 module.exports = router;

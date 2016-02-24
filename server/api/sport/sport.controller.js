@@ -24,7 +24,6 @@ function respondWithResult(res, statusCode) {
 function handleEntityNotFound(res) {
   return function (entity) {
     if (!entity) {
-      console.log('TOTO')
       res.status(404).end();
       return null;
     }
