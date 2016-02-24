@@ -90,27 +90,30 @@ export function select(req, res) {
   var sportId = req.params.sportId;
 
   Sport.findByIdAsync(sportId)
-    .then(handleEntityNotFound(res))
     .then((sport) => {
-      MySport.findOneAsync({
-          user: userId,
-          sport: sportId
-        })
-        .then((mySport) => {
-          console.log('select : ' + mySport)
-          if (mySport) {
-            respondWithResult(res, 304)(mySport);
-          } else {
-            var mySport = new MySport({
-              user: userId,
-              sport: sportId
-            });
-            mySport.saveAsync()
-              .then(respondWithResult(res))
-              .catch(validationError(res));
-          }
-        })
-        .catch(handleError(res));
+      if (!sport) {
+        handleEntityNotFound(res)();
+      } else {
+        MySport.findOneAsync({
+            user: userId,
+            sport: sportId
+          })
+          .then((mySport) => {
+            if (mySport) {
+              respondWithResult(res, 304)(mySport);
+            } else {
+              var mySport = new MySport({
+                user: userId,
+                sport: sportId
+              });
+              mySport.saveAsync()
+                .then(respondWithResult(res))
+                .catch(validationError(res));
+            }
+          })
+          .catch(handleError(res));
+      }
+
     })
     .catch(handleError(res));
 }
@@ -123,6 +126,7 @@ export function unselect(req, res) {
       user: userId,
       sport: sportId
     })
+    .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
 }

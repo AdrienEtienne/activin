@@ -49,57 +49,21 @@ describe('MySport API Router:', function () {
         .withArgs('/mine', 'authService.isAuthenticated', 'mySportCtrl.mine')
         .should.have.been.calledOnce;
     });
+  });
+
+  describe('POST /api/mySports', function () {
+
+    it('should route to mySport.controller.select', function () {
+      routerStub.post
+        .withArgs('/select/:sportId', 'authService.isAuthenticated', 'mySportCtrl.select')
+        .should.have.been.calledOnce;
+    });
+
+    it('should route to mySport.controller.unselect', function () {
+      routerStub.post
+        .withArgs('/unselect/:sportId', 'authService.isAuthenticated', 'mySportCtrl.unselect')
+        .should.have.been.calledOnce;
+    });
 
   });
-  /*
-    describe('GET /api/mySports/:id', function () {
-
-      it('should route to mySport.controller.show', function () {
-        routerStub.get
-          .withArgs('/:id', 'mySportCtrl.show')
-          .should.have.been.calledOnce;
-      });
-
-    });
-
-    describe('POST /api/mySports', function () {
-
-      it('should route to mySport.controller.create', function () {
-        routerStub.post
-          .withArgs('/', 'mySportCtrl.create')
-          .should.have.been.calledOnce;
-      });
-
-    });
-
-    describe('PUT /api/mySports/:id', function () {
-
-      it('should route to mySport.controller.update', function () {
-        routerStub.put
-          .withArgs('/:id', 'mySportCtrl.update')
-          .should.have.been.calledOnce;
-      });
-
-    });
-
-    describe('PATCH /api/mySports/:id', function () {
-
-      it('should route to mySport.controller.update', function () {
-        routerStub.patch
-          .withArgs('/:id', 'mySportCtrl.update')
-          .should.have.been.calledOnce;
-      });
-
-    });
-
-    describe('DELETE /api/mySports/:id', function () {
-
-      it('should route to mySport.controller.destroy', function () {
-        routerStub.delete
-          .withArgs('/:id', 'mySportCtrl.destroy')
-          .should.have.been.calledOnce;
-      });
-
-    });
-  */
 });

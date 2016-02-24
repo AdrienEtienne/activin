@@ -155,5 +155,38 @@ describe('MySport API:', function () {
           .end(done);
       });
     });
+
+    describe('/unselect', function () {
+      beforeEach('Select Sport1', function (done) {
+        request(app)
+          .post('/api/mySports/select/' + sport1._id)
+          .set('authorization', 'Bearer ' + token)
+          .end(done);
+      });
+
+      it('should respond 200', function (done) {
+        request(app)
+          .post('/api/mySports/unselect/' + sport1._id)
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(done);
+      });
+
+      it('should respond 404 if NOT FOUND', function (done) {
+        request(app)
+          .post('/api/mySports/unselect/' + sport2._id)
+          .set('authorization', 'Bearer ' + token)
+          .expect(404)
+          .end(done);
+      });
+
+      it('should respond 500 if id error', function (done) {
+        request(app)
+          .post('/api/mySports/unselect/donotexist')
+          .set('authorization', 'Bearer ' + token)
+          .expect(500)
+          .end(done);
+      });
+    });
   });
 });
