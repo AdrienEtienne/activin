@@ -5,7 +5,6 @@
 
 'use strict';
 import User from '../api/user/user.model';
-import Sport from '../api/sport/sport.model';
 
 User.find({}).removeAsync()
   .then(() => {
@@ -25,27 +24,3 @@ User.find({}).removeAsync()
         console.log('finished populating users');
       });
   });
-
-Sport.updateAsync({
-  name: 'running'
-}, {
-  name: 'running'
-}, {
-  upsert: true
-});
-
-Sport.updateAsync({
-  name: 'cycling'
-}, {
-  name: 'cycling'
-}, {
-  upsert: true
-});
-
-Sport.updateAsync({
-  name: 'soccer'
-}, {
-  name: 'soccer'
-}, {
-  upsert: true
-});
