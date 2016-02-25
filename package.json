@@ -1,6 +1,6 @@
 {
     "name": "activin",
-    "version": "1.0.0-alpha.2",
+    "version": "1.0.0-alpha.3",
     "main": "server/app.js",
     "dependencies": {
         "express": "^4.13.3",
