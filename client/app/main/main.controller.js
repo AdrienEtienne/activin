@@ -4,7 +4,7 @@
 
   class MainController {
 
-    constructor($http, $scope) {
+    constructor($http) {
       this.$http = $http;
       this.sports = [];
 
