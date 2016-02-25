@@ -102,7 +102,7 @@ export function select(req, res) {
             if (mySport) {
               respondWithResult(res, 304)(mySport);
             } else {
-              var mySport = new MySport({
+              mySport = new MySport({
                 user: userId,
                 sport: sportId
               });
