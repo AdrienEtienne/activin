@@ -1,6 +1,6 @@
 'use strict';
 
-var Promise = require('bluebird');
+var bluebird = require('bluebird');
 var mongoose = require('bluebird').promisifyAll(require('mongoose'));
 import config from '../../config/environment';
 
@@ -14,7 +14,7 @@ var SportSchema = new mongoose.Schema({
 
 var Sport = mongoose.model('Sport', SportSchema);
 
-Promise.each(
+bluebird.each(
 	config.data.sports,
 	function (item, index) {
 		return Sport.updateAsync({
