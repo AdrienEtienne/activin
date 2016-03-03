@@ -1,5 +1,6 @@
 'use strict';
 
+var Promise = require('bluebird');
 var mongoose = require('bluebird').promisifyAll(require('mongoose'));
 import config from '../../config/environment';
 
@@ -13,14 +14,34 @@ var SportSchema = new mongoose.Schema({
 
 var Sport = mongoose.model('Sport', SportSchema);
 
-for (var i = config.data.sports.length - 1; i >= 0; i--) {
-	Sport.updateAsync({
-		name: config.data.sports[i]
-	}, {
-		name: config.data.sports[i]
-	}, {
-		upsert: true
+Promise.each(
+	config.data.sports,
+	function (item, index) {
+		return Sport.updateAsync({
+			name: config.data.sports[index]
+		}, {
+			name: config.data.sports[index]
+		}, {
+			upsert: true
+		});
+	}
+).then(function () {
+	console.log('finished populating sports');
+	return Sport.removeAsync({
+		name: {
+			$nin: config.data.sports
+		}
 	});
-}
+})
+
+// for (var i = config.data.sports.length - 1; i >= 0; i--) {
+// 	Sport.updateAsync({
+// 		name: config.data.sports[i]
+// 	}, {
+// 		name: config.data.sports[i]
+// 	}, {
+// 		upsert: true
+// 	});
+// }
 
 export default Sport;
