@@ -4,6 +4,7 @@ var proxyquire = require('proxyquire').noPreserveCache();
 
 var mySportCtrlStub = {
   mine: 'mySportCtrl.mine',
+  noneMine: 'mySportCtrl.noneMine',
   select: 'mySportCtrl.select',
   unselect: 'mySportCtrl.unselect'
 };
@@ -47,6 +48,15 @@ describe('MySport API Router:', function () {
     it('should route to mySport.controller.mine', function () {
       routerStub.get
         .withArgs('/mine', 'authService.isAuthenticated', 'mySportCtrl.mine')
+        .should.have.been.calledOnce;
+    });
+  });
+
+  describe('GET /api/mySports/noneMine', function () {
+
+    it('should route to mySport.controller.noneMine', function () {
+      routerStub.get
+        .withArgs('/noneMine', 'authService.isAuthenticated', 'mySportCtrl.noneMine')
         .should.have.been.calledOnce;
     });
   });

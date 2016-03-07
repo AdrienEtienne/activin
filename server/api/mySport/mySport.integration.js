@@ -12,6 +12,10 @@ describe('MySport API:', function () {
   var token;
   var sport1, sport2;
 
+  before('Remove all sports', function () {
+    return Sport.removeAsync();
+  });
+
   // Clear users before testing
   before('Add user', function () {
     return User.removeAsync().then(function () {
@@ -87,7 +91,7 @@ describe('MySport API:', function () {
         mySports.should.be.instanceOf(Array);
       });
 
-      it('should respond 401', function (done) {
+      it('should respond 401 when no authorization', function (done) {
         request(app)
           .get('/api/mySports/mine')
           .expect(401)
@@ -119,16 +123,79 @@ describe('MySport API:', function () {
         mySports.should.have.length(0);
       });
     });
-  });
 
-  describe('POST /api/mySports', function () {
-    describe('/select', function () {
-      it('should respond 200', function (done) {
+    describe('/noneMine', function () {
+      beforeEach('Get mySports', function (done) {
+        request(app)
+          .get('/api/mySports/noneMine')
+          .set('authorization', 'Bearer ' + token)
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            mySports = res.body;
+            done();
+          });
+      });
+
+      it('should contain the good sport', function () {
+        mySports.should.have.length(2);
+        mySports[0]._id.should.equal(sport1._id.toString());
+        mySports[1]._id.should.equal(sport2._id.toString());
+      });
+
+      it('should respond 401 when no authorization', function (done) {
+        request(app)
+          .get('/api/mySports/noneMine')
+          .expect(401)
+          .end(done);
+      });
+
+      it('should respond 200 for selection', function (done) {
         request(app)
           .post('/api/mySports/select/' + sport1._id)
           .set('authorization', 'Bearer ' + token)
           .expect(200)
           .end(done);
+      });
+
+      it('should contain the good sport', function () {
+        mySports.should.have.length(1);
+        mySports[0]._id.should.equal(sport2._id.toString());
+      });
+
+      it('should respond 204 for unselection', function (done) {
+        request(app)
+          .post('/api/mySports/unselect/' + sport1._id)
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(done);
+      });
+
+      it('should contain 2 sports', function () {
+        mySports.should.have.length(2);
+      });
+    });
+  });
+
+  describe('POST /api/mySports', function () {
+    describe('/select', function () {
+      it('should respond 200 with sport', function (done) {
+        request(app)
+          .post('/api/mySports/select/' + sport1._id)
+          .set('authorization', 'Bearer ' + token)
+          .expect(200)
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            var mySport = res.body;
+            console.log(res.body)
+            mySport._id.should.equal(sport1._id.toString());
+            done();
+          });
       });
 
       it('should respond 304 if already selected', function (done) {
@@ -157,13 +224,6 @@ describe('MySport API:', function () {
     });
 
     describe('/unselect', function () {
-      beforeEach('Select Sport1', function (done) {
-        request(app)
-          .post('/api/mySports/select/' + sport1._id)
-          .set('authorization', 'Bearer ' + token)
-          .end(done);
-      });
-
       it('should respond 200', function (done) {
         request(app)
           .post('/api/mySports/unselect/' + sport1._id)

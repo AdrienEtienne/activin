@@ -85,6 +85,26 @@ export function mine(req, res) {
     .catch(handleError(res));
 }
 
+// Gets a list of none MySports
+export function noneMine(req, res) {
+  var userId = req.user._id;
+  MySport.findAsync({
+      user: userId
+    })
+    .then((mySports) => {
+      var ids = _.pluck(mySports, 'sport');
+      Sport
+        .findAsync({
+          '_id': {
+            $nin: ids
+          }
+        })
+        .then(respondWithResult(res))
+        .catch(handleError(res));
+    })
+    .catch(handleError(res));
+}
+
 export function select(req, res) {
   var userId = req.user._id;
   var sportId = req.params.sportId;
@@ -100,14 +120,16 @@ export function select(req, res) {
           })
           .then((mySport) => {
             if (mySport) {
-              respondWithResult(res, 304)(mySport);
+              respondWithResult(res, 304)(sport);
             } else {
               mySport = new MySport({
                 user: userId,
                 sport: sportId
               });
               mySport.saveAsync()
-                .then(respondWithResult(res))
+                .then(function () {
+                  respondWithResult(res)(sport);
+                })
                 .catch(validationError(res));
             }
           })
