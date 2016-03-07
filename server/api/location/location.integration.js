@@ -64,8 +64,7 @@ describe('Location API:', function () {
       request(app)
         .get('/api/locations')
         .expect(401)
-        .expect('Content-Type', /json/)
-        .end();
+        .end(done);
     });
   });
 
@@ -73,6 +72,7 @@ describe('Location API:', function () {
     beforeEach(function (done) {
       request(app)
         .post('/api/locations')
+        .set('authorization', 'Bearer ' + token)
         .send({
           name: 'New Location',
           location: [-95.56, 29.735]
@@ -90,7 +90,7 @@ describe('Location API:', function () {
 
     it('should respond with the newly created location', function () {
       newLocation.name.should.equal('New Location');
-      newLocation.info.should.equal('This is the brand new location!!!');
+      newLocation.location.should.deep.equal([-95.56, 29.735]);
     });
 
   });
@@ -118,7 +118,7 @@ describe('Location API:', function () {
 
     it('should respond with the requested location', function () {
       location.name.should.equal('New Location');
-      location.info.should.equal('This is the brand new location!!!');
+      location.location.should.deep.equal([-95.56, 29.735]);
     });
 
   });
@@ -129,9 +129,10 @@ describe('Location API:', function () {
     beforeEach(function (done) {
       request(app)
         .put('/api/locations/' + newLocation._id)
+        .set('authorization', 'Bearer ' + token)
         .send({
           name: 'Updated Location',
-          info: 'This is the updated location!!!'
+          location: [1, 1]
         })
         .expect(200)
         .expect('Content-Type', /json/)
@@ -150,7 +151,7 @@ describe('Location API:', function () {
 
     it('should respond with the updated location', function () {
       updatedLocation.name.should.equal('Updated Location');
-      updatedLocation.info.should.equal('This is the updated location!!!');
+      updatedLocation.location.should.deep.equal([1, 1]);
     });
 
   });
@@ -160,6 +161,7 @@ describe('Location API:', function () {
     it('should respond with 204 on successful removal', function (done) {
       request(app)
         .delete('/api/locations/' + newLocation._id)
+        .set('authorization', 'Bearer ' + token)
         .expect(204)
         .end((err, res) => {
           if (err) {
@@ -172,6 +174,7 @@ describe('Location API:', function () {
     it('should respond with 404 when location does not exist', function (done) {
       request(app)
         .delete('/api/locations/' + newLocation._id)
+        .set('authorization', 'Bearer ' + token)
         .expect(404)
         .end((err, res) => {
           if (err) {

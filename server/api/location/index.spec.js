@@ -2,6 +2,15 @@
 
 var proxyquire = require('proxyquire').noPreserveCache();
 
+var authServiceStub = {
+  isAuthenticated() {
+      return 'authService.isAuthenticated';
+    },
+    hasRole(role) {
+      return 'authService.hasRole.' + role;
+    }
+};
+
 var locationCtrlStub = {
   index: 'locationCtrl.index',
   show: 'locationCtrl.show',
@@ -13,7 +22,6 @@ var locationCtrlStub = {
 var routerStub = {
   get: sinon.spy(),
   put: sinon.spy(),
-  patch: sinon.spy(),
   post: sinon.spy(),
   delete: sinon.spy()
 };
@@ -21,32 +29,33 @@ var routerStub = {
 // require the index with our stubbed out modules
 var locationIndex = proxyquire('./index.js', {
   'express': {
-    Router: function() {
+    Router: function () {
       return routerStub;
     }
   },
-  './location.controller': locationCtrlStub
+  './location.controller': locationCtrlStub,
+  '../../auth/auth.service': authServiceStub
 });
 
-describe('UserLocation API Router:', function() {
+describe('UserLocation API Router:', function () {
 
-  it('should return an express router instance', function() {
+  it('should return an express router instance', function () {
     locationIndex.should.equal(routerStub);
   });
 
-  describe('GET /api/locations', function() {
+  describe('GET /api/locations', function () {
 
-    it('should route to location.controller.index', function() {
+    it('should route to location.controller.index', function () {
       routerStub.get
-        .withArgs('/', 'locationCtrl.index')
+        .withArgs('/', 'authService.isAuthenticated', 'locationCtrl.index')
         .should.have.been.calledOnce;
     });
 
   });
 
-  describe('GET /api/locations/:id', function() {
+  describe('GET /api/locations/:id', function () {
 
-    it('should route to location.controller.show', function() {
+    it('should route to location.controller.show', function () {
       routerStub.get
         .withArgs('/:id', 'locationCtrl.show')
         .should.have.been.calledOnce;
@@ -54,41 +63,31 @@ describe('UserLocation API Router:', function() {
 
   });
 
-  describe('POST /api/locations', function() {
+  describe('POST /api/locations', function () {
 
-    it('should route to location.controller.create', function() {
+    it('should route to location.controller.create', function () {
       routerStub.post
-        .withArgs('/', 'locationCtrl.create')
+        .withArgs('/', 'authService.isAuthenticated', 'locationCtrl.create')
         .should.have.been.calledOnce;
     });
 
   });
 
-  describe('PUT /api/locations/:id', function() {
+  describe('PUT /api/locations/:id', function () {
 
-    it('should route to location.controller.update', function() {
+    it('should route to location.controller.update', function () {
       routerStub.put
-        .withArgs('/:id', 'locationCtrl.update')
+        .withArgs('/:id', 'authService.isAuthenticated', 'locationCtrl.update')
         .should.have.been.calledOnce;
     });
 
   });
 
-  describe('PATCH /api/locations/:id', function() {
+  describe('DELETE /api/locations/:id', function () {
 
-    it('should route to location.controller.update', function() {
-      routerStub.patch
-        .withArgs('/:id', 'locationCtrl.update')
-        .should.have.been.calledOnce;
-    });
-
-  });
-
-  describe('DELETE /api/locations/:id', function() {
-
-    it('should route to location.controller.destroy', function() {
+    it('should route to location.controller.destroy', function () {
       routerStub.delete
-        .withArgs('/:id', 'locationCtrl.destroy')
+        .withArgs('/:id', 'authService.isAuthenticated', 'locationCtrl.destroy')
         .should.have.been.calledOnce;
     });
 
