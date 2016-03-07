@@ -12,10 +12,6 @@ describe('MySport API:', function () {
   var token;
   var sport1, sport2;
 
-  before('Remove all sports', function () {
-    return Sport.removeAsync();
-  });
-
   // Clear users before testing
   before('Add user', function () {
     return User.removeAsync().then(function () {
@@ -48,6 +44,11 @@ describe('MySport API:', function () {
   after('Remove User', function () {
     return User.removeAsync();
   });
+
+  before('Remove all sports', function () {
+    return Sport.removeAsync();
+  });
+
 
   before('Create sport', function (done) {
     Sport.create({
