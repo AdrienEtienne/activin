@@ -7,6 +7,7 @@ import * as auth from '../../auth/auth.service';
 var router = express.Router();
 
 router.get('/mine', auth.isAuthenticated(), controller.mine);
+router.get('/noneMine', auth.isAuthenticated(), controller.noneMine);
 router.post('/select/:sportId', auth.isAuthenticated(), controller.select);
 router.post('/unselect/:sportId', auth.isAuthenticated(), controller.unselect);
 

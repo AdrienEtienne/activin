@@ -85,6 +85,26 @@ export function mine(req, res) {
     .catch(handleError(res));
 }
 
+// Gets a list of none MySports
+export function noneMine(req, res) {
+  var userId = req.user._id;
+  MySport.findAsync({
+      user: userId
+    })
+    .then((mySports) => {
+      var ids = _.pluck(mySports, 'sport');
+      Sport
+        .findAsync({
+          '_id': {
+            $nin: ids
+          }
+        })
+        .then(respondWithResult(res))
+        .catch(handleError(res));
+    })
+    .catch(handleError(res));
+}
+
 export function select(req, res) {
   var userId = req.user._id;
   var sportId = req.params.sportId;
