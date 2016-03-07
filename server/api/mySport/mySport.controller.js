@@ -120,14 +120,16 @@ export function select(req, res) {
           })
           .then((mySport) => {
             if (mySport) {
-              respondWithResult(res, 304)(mySport);
+              respondWithResult(res, 304)(sport);
             } else {
               mySport = new MySport({
                 user: userId,
                 sport: sportId
               });
               mySport.saveAsync()
-                .then(respondWithResult(res))
+                .then(function () {
+                  respondWithResult(res)(sport);
+                })
                 .catch(validationError(res));
             }
           })

@@ -182,12 +182,20 @@ describe('MySport API:', function () {
 
   describe('POST /api/mySports', function () {
     describe('/select', function () {
-      it('should respond 200', function (done) {
+      it('should respond 200 with sport', function (done) {
         request(app)
           .post('/api/mySports/select/' + sport1._id)
           .set('authorization', 'Bearer ' + token)
           .expect(200)
-          .end(done);
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            var mySport = res.body;
+            console.log(res.body)
+            mySport._id.should.equal(sport1._id.toString());
+            done();
+          });
       });
 
       it('should respond 304 if already selected', function (done) {
@@ -216,13 +224,6 @@ describe('MySport API:', function () {
     });
 
     describe('/unselect', function () {
-      beforeEach('Select Sport1', function (done) {
-        request(app)
-          .post('/api/mySports/select/' + sport1._id)
-          .set('authorization', 'Bearer ' + token)
-          .end(done);
-      });
-
       it('should respond 200', function (done) {
         request(app)
           .post('/api/mySports/unselect/' + sport1._id)
