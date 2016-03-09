@@ -57,7 +57,7 @@ describe('UserLocation API Router:', function () {
 
     it('should route to location.controller.show', function () {
       routerStub.get
-        .withArgs('/:id', 'locationCtrl.show')
+        .withArgs('/:id', 'authService.isAuthenticated', 'locationCtrl.show')
         .should.have.been.calledOnce;
     });
 

@@ -38,6 +38,11 @@ describe('Location API:', function () {
       });
   });
 
+  // Clear users after testing
+  after('Remove User', function () {
+    return User.removeAsync();
+  });
+
   describe('GET /api/locations', function () {
     var locations;
 
@@ -101,6 +106,7 @@ describe('Location API:', function () {
     beforeEach(function (done) {
       request(app)
         .get('/api/locations/' + newLocation._id)
+        .set('authorization', 'Bearer ' + token)
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {

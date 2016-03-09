@@ -193,7 +193,6 @@ describe('MySport API:', function () {
               return done(err);
             }
             var mySport = res.body;
-            console.log(res.body)
             mySport._id.should.equal(sport1._id.toString());
             done();
           });

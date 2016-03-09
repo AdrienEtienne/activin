@@ -21,7 +21,11 @@ var UserSchema = new Schema({
   salt: String,
   facebook: {},
   google: {},
-  github: {}
+  github: {},
+  locations: [{
+    type: Number,
+    ref: 'Location'
+  }]
 });
 
 /**
