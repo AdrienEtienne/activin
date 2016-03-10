@@ -4,17 +4,18 @@ import User from './user.model';
 import passport from 'passport';
 import config from '../../config/environment';
 import jwt from 'jsonwebtoken';
+import _ from 'lodash';
 
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).json(err);
   }
 }
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }
@@ -39,11 +40,15 @@ export function create(req, res, next) {
   newUser.provider = 'local';
   newUser.role = 'user';
   newUser.saveAsync()
-    .spread(function(user) {
-      var token = jwt.sign({ _id: user._id }, config.secrets.session, {
+    .spread(function (user) {
+      var token = jwt.sign({
+        _id: user._id
+      }, config.secrets.session, {
         expiresIn: 60 * 60 * 5
       });
-      res.json({ token });
+      res.json({
+        token
+      });
     })
     .catch(validationError(res));
 }
@@ -70,7 +75,7 @@ export function show(req, res, next) {
  */
 export function destroy(req, res) {
   User.findByIdAndRemoveAsync(req.params.id)
-    .then(function() {
+    .then(function () {
       res.status(204).end();
     })
     .catch(handleError(res));
@@ -105,7 +110,9 @@ export function changePassword(req, res, next) {
 export function me(req, res, next) {
   var userId = req.user._id;
 
-  User.findOneAsync({ _id: userId }, '-salt -password')
+  User.findOneAsync({
+      _id: userId
+    }, '-salt -password')
     .then(user => { // don't ever give out the password or salt
       if (!user) {
         return res.status(401).end();
@@ -120,4 +127,51 @@ export function me(req, res, next) {
  */
 export function authCallback(req, res, next) {
   res.redirect('/');
+}
+
+/**
+ * AddLocation
+ */
+export function addLocation(req, res, next) {
+  var userId = req.user._id;
+  var location = req.body;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      if (!_.find(user.locations, function (loc) {
+          return loc.toString() === location._id;
+        })) {
+        user.locations.push(location);
+        return user.saveAsync().then(() => {
+            res.status(204).end();
+          })
+          .catch(validationError(res));
+      } else {
+        return res.status(403).end();
+      }
+    });
+}
+
+/**
+ * DeleteLocation
+ */
+export function deleteLocation(req, res, next) {
+  var userId = req.user._id;
+  var location = req.body;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      var locationId = _.remove(user.locations, function (loc) {
+        return loc.toString() === location._id;
+      });
+      if (locationId.length > 0) {
+        user.markModified('locations');
+        return user.saveAsync().then(() => {
+            res.status(204).end();
+          })
+          .catch(validationError(res));
+      } else {
+        return res.status(403).end();
+      }
+    });
 }
