@@ -7,6 +7,7 @@ var userCtrlStub = {
   destroy: 'userCtrl.destroy',
   me: 'userCtrl.me',
   changePassword: 'userCtrl.changePassword',
+  setLocation: 'userCtrl.setLocation',
   addLocation: 'userCtrl.addLocation',
   deleteLocation: 'userCtrl.deleteLocation',
   show: 'userCtrl.show',
@@ -108,6 +109,14 @@ describe('User API Router:', function () {
 
 
   describe('User Location', function () {
+    describe('PUT /api/users/:id/location', function () {
+      it('should be authenticated and route to user.controller.location', function () {
+        routerStub.put
+          .withArgs('/:id/location', 'authService.isAuthenticated', 'userCtrl.setLocation')
+          .should.have.been.calledOnce;
+      });
+
+    });
 
     describe('PUT /api/users/:id/addLocation', function () {
       it('should be authenticated and route to user.controller.addLocation', function () {

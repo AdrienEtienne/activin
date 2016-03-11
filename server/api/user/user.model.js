@@ -25,6 +25,11 @@ var UserSchema = new Schema({
   facebook: {},
   google: {},
   github: {},
+  location: {
+    type: [Number],
+    index: '2d',
+    default: []
+  },
   locations: [{
     type: Schema.Types.ObjectId,
     ref: 'Location'

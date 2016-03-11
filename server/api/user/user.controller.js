@@ -132,6 +132,23 @@ export function authCallback(req, res, next) {
 /**
  * AddLocation
  */
+export function setLocation(req, res, next) {
+  var userId = req.user._id;
+  var location = _.isEmpty(req.body) ? null : req.body;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      user.location = location;
+      return user.saveAsync().then(() => {
+          res.status(204).end();
+        })
+        .catch(validationError(res));
+    });
+}
+
+/**
+ * AddLocation
+ */
 export function addLocation(req, res, next) {
   var userId = req.user._id;
   var location = req.body;

@@ -83,6 +83,46 @@ describe('User API:', function () {
       return Location.removeAsync();
     });
 
+    describe('PUT /api/users/:id/location', function () {
+      it('should have no location by default', function (done) {
+        User.findByIdAsync(user._id).then(function (result) {
+          assert.equal(result.location, undefined);
+          done();
+        });
+      });
+
+      it('should respond with an 201', function (done) {
+        request(app)
+          .put('/api/users/' + user._id + '/location')
+          .send([-95.56, 29.735])
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(done);
+      });
+
+      it('should have one location', function (done) {
+        User.findByIdAsync(user._id).then(function (result) {
+          result.location.should.deep.equal([-95.56, 29.735]);
+          done();
+        });
+      });
+
+      it('should respond with an 201', function (done) {
+        request(app)
+          .put('/api/users/' + user._id + '/location')
+          .set('authorization', 'Bearer ' + token)
+          .expect(204)
+          .end(done);
+      });
+
+      it('should have no location', function (done) {
+        User.findByIdAsync(user._id).then(function (result) {
+          assert.equal(result.location, undefined);
+          done();
+        });
+      });
+    });
+
     describe('PUT /api/users/:id/addLocation', function () {
       it('should have zero location', function (done) {
         User.findByIdAsync(user._id).then(function (result) {
