@@ -106,17 +106,6 @@ describe('Application API:', function () {
         });
     });
 
-    it('should not have the file if version error', function (done) {
-      gfs.exist({
-          filename: 'ActivIn_vwrong.apk',
-          root: 'applications'
-        },
-        function (err, found) {
-          found.should.equal(false);
-          done(err);
-        });
-    });
-
     it('should respond with 500 when bad platform', function (done) {
       request(app)
         .post('/api/applications')
@@ -182,19 +171,19 @@ describe('Application API:', function () {
 
   });
 
-  describe.skip('GET /api/applications/:platform/:id', function () {
-    var application;
+  describe('GET /api/applications/:platform/last', function () {
+    var application, newApplication2;
 
     beforeEach(function (done) {
       request(app)
-        .get('/api/applications/android/' + newApplication._id)
+        .get('/api/applications/android/last')
         .expect(200)
-        .expect('Content-Type', 'application/octet-stream')
+        .expect('Content-Type', /json/)
         .end((err, res) => {
           if (err) {
             return done(err);
           }
-          application = res;
+          application = res.body;
           done();
         });
     });
@@ -203,10 +192,60 @@ describe('Application API:', function () {
       application = {};
     });
 
-    it('should respond with the requested application for download', function () {
-      console.log(application);
+    after(function (done) {
+      request(app)
+        .delete('/api/applications/' + newApplication2._id)
+        .set('authorization', 'Bearer ' + token)
+        .expect(204)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          done();
+        });
+    })
+
+    it('should respond with the last application', function () {
+      application.version.should.equal('1.0.0');
+      application.platform.should.equal('android');
     });
 
+    it('should respond with the last application', function (done) {
+      request(app)
+        .post('/api/applications')
+        .set('authorization', 'Bearer ' + token)
+        .field('version', '1.0.1')
+        .field('platform', 'android')
+        .attach('application', 'package.json')
+        .expect(201)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          newApplication2 = res.body;
+          newApplication2.version.should.equal('1.0.1');
+          newApplication2.platform.should.equal('android');
+          done();
+        });
+    });
+  });
+
+  describe('GET /api/applications/:platform/download/:id', function (done) {
+
+    it('should download a file', function (done) {
+      request(app)
+        .get('/api/applications/android/download/' + newApplication.file)
+        .expect('Content-Type', 'application/octet-stream')
+        .expect(200)
+        .end(done);
+    });
+
+    it('should return an error', function (done) {
+      request(app)
+        .get('/api/applications/android/download/' + newApplication._id)
+        .expect(403)
+        .end(done);
+    });
   });
 
   describe('PUT /api/applications/:id', function () {
@@ -254,6 +293,15 @@ describe('Application API:', function () {
           if (err) {
             return done(err);
           }
+          done();
+        });
+    });
+
+    it('should not contain file if application removed', function (done) {
+      mongoose.connection.db.collection('applications.files')
+        .find()
+        .toArray(function (err, files) {
+          files.should.have.length(0);
           done();
         });
     });

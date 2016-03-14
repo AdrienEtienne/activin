@@ -7,7 +7,8 @@ import * as auth from '../../auth/auth.service';
 var router = express.Router();
 
 router.get('/:platform', controller.index);
-router.get('/:platform/:id', controller.show);
+router.get('/:platform/last', controller.show);
+router.get('/:platform/download/:id', controller.download);
 
 import multer from 'multer';
 var upload = multer({

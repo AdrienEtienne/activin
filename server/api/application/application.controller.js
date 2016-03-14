@@ -20,7 +20,7 @@ var gfs;
 Grid.mongo = mongoose.mongo;
 mongoose.connection.once('open', function () {
   gfs = Grid(mongoose.connection.db);
-})
+});
 
 const root = 'applications';
 
@@ -46,10 +46,16 @@ function saveUpdates(updates) {
 function removeEntity(res) {
   return function (entity) {
     if (entity) {
-      return entity.removeAsync()
-        .then(() => {
-          res.status(204).end();
-        });
+      gfs.remove({
+        _id: entity.file,
+        root: root
+      }, function () {
+        return entity.removeAsync()
+          .then(() => {
+            res.status(204).end();
+          });
+      });
+
     }
   };
 }
@@ -80,12 +86,37 @@ export function index(req, res) {
     .catch(handleError(res));
 }
 
-// Gets a single Application from the DB
+// Gets a latest Application from the DB
 export function show(req, res) {
-  Application.findByIdAsync(req.params.id)
+  Application.findOneAsync({
+      platform: req.params.platform
+    }, {}, {
+      sort: {
+        'updatedAt': -1
+      }
+    })
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
+}
+
+// Gets a single Application from the DB
+export function download(req, res) {
+  var readstream = gfs.createReadStream({
+    _id: req.params.id,
+    root: root
+  });
+
+  readstream.on('open', function () {
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.status(200);
+  });
+
+  readstream.on('error', function (err) {
+    return res.status(403).json(err);
+  });
+
+  readstream.pipe(res);
 }
 
 // Creates a new Application in the DB

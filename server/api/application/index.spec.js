@@ -5,18 +5,25 @@ var proxyquire = require('proxyquire').noPreserveCache();
 var applicationCtrlStub = {
   index: 'applicationCtrl.index',
   show: 'applicationCtrl.show',
+  download: 'applicationCtrl.download',
   create: 'applicationCtrl.create',
   update: 'applicationCtrl.update',
   destroy: 'applicationCtrl.destroy'
 };
 
 var authServiceStub = {
-  isAuthenticated() {
-      return 'authService.isAuthenticated';
-    },
-    hasRole(role) {
-      return 'authService.hasRole.' + role;
-    }
+  isAuthenticated: function () {
+    return 'authService.isAuthenticated';
+  },
+  hasRole: function (role) {
+    return 'authService.hasRole.' + role;
+  }
+};
+
+var uploadServiceStub = {
+  single: function (name) {
+    return 'uploadService.' + name;
+  }
 };
 
 var routerStub = {
@@ -35,7 +42,10 @@ var applicationIndex = proxyquire('./index.js', {
     }
   },
   './application.controller': applicationCtrlStub,
-  '../../auth/auth.service': authServiceStub
+  '../../auth/auth.service': authServiceStub,
+  'multer': function (options) {
+    return uploadServiceStub;
+  }
 });
 
 describe('Application API Router:', function () {
@@ -54,11 +64,21 @@ describe('Application API Router:', function () {
 
   });
 
-  describe('GET /api/applications/:platform/:id', function () {
+  describe('GET /api/applications/:platform/last', function () {
 
     it('should route to application.controller.show', function () {
       routerStub.get
-        .withArgs('/:platform/:id', 'applicationCtrl.show')
+        .withArgs('/:platform/last', 'applicationCtrl.show')
+        .should.have.been.calledOnce;
+    });
+
+  });
+
+  describe('GET /api/applications/:platform/download/:id', function () {
+
+    it('should route to application.controller.download', function () {
+      routerStub.get
+        .withArgs('/:platform/download/:id', 'applicationCtrl.download')
         .should.have.been.calledOnce;
     });
 
@@ -66,9 +86,9 @@ describe('Application API Router:', function () {
 
   describe('POST /api/applications', function () {
 
-    it.skip('should route to application.controller.create', function () {
+    it('should route to application.controller.create', function () {
       routerStub.post
-        .withArgs('/', 'authService.hasRole.admin', 'applicationCtrl.create')
+        .withArgs('/', 'authService.hasRole.admin', 'uploadService.application', 'applicationCtrl.create')
         .should.have.been.calledOnce;
     });
 
