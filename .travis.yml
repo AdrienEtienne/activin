@@ -5,7 +5,7 @@ node_js:
 branches:
   only:
     - master
-    - stable
+    - develop
   except:
     - /^feature.*$/
 matrix:
