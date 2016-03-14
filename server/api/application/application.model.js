@@ -9,7 +9,15 @@ var ApplicationSchema = new mongoose.Schema({
 		type: String,
 		required: true
 	},
-	platform: String
+	platform: String,
+	createdAt: {
+		type: Date,
+		default: Date.now
+	},
+	updatedAt: {
+		type: Date,
+		default: Date.now
+	},
 });
 
 ApplicationSchema
@@ -28,5 +36,11 @@ ApplicationSchema
 			return true;
 		} else return false;
 	}, 'Platform not known');
+
+ApplicationSchema
+	.pre('save', function preSave(next) {
+		this.updatedAt = Date.now();
+		next();
+	});
 
 export default mongoose.model('Application', ApplicationSchema);

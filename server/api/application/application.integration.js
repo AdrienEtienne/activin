@@ -89,6 +89,7 @@ describe('Application API:', function () {
     it('should respond with the newly created application', function () {
       newApplication.version.should.equal('1.0.0');
       newApplication.platform.should.equal('android');
+      newApplication.createdAt.should.not.equal(newApplication.updatedAt);
     });
 
     it('should respond with 500 when bad version', function (done) {
@@ -185,6 +186,7 @@ describe('Application API:', function () {
     it('should respond with the updated application', function () {
       updatedApplication.version.should.equal('1.0.1');
       updatedApplication.platform.should.equal('ios');
+      updatedApplication.createdAt.should.not.equal(updatedApplication.updatedAt);
     });
 
   });

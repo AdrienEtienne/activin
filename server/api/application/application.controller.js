@@ -76,6 +76,7 @@ export function show(req, res) {
 
 // Creates a new Application in the DB
 export function create(req, res) {
+  req.body.createdAt = req.body.updatedAt = Date.now();
   Application.createAsync(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
