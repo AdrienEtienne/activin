@@ -66,7 +66,7 @@ describe('Application API Router:', function () {
 
   describe('POST /api/applications', function () {
 
-    it('should route to application.controller.create', function () {
+    it.skip('should route to application.controller.create', function () {
       routerStub.post
         .withArgs('/', 'authService.hasRole.admin', 'applicationCtrl.create')
         .should.have.been.calledOnce;

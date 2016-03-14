@@ -18,6 +18,7 @@ var ApplicationSchema = new mongoose.Schema({
 		type: Date,
 		default: Date.now
 	},
+	file: mongoose.Schema.Types.ObjectId
 });
 
 ApplicationSchema

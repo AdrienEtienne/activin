@@ -3,6 +3,9 @@
 var app = require('../..');
 import request from 'supertest';
 import User from '../user/user.model';
+import mongoose from 'mongoose';
+import Grid from 'gridfs-stream';
+var gfs = new Grid(mongoose.connection.db, mongoose.mongo);
 
 var newApplication;
 
@@ -68,14 +71,20 @@ describe('Application API:', function () {
   });
 
   describe('POST /api/applications', function () {
-    beforeEach(function (done) {
+    before(function (done) {
+      mongoose.connection.db.collection('applications.files').deleteMany({}, done);
+    })
+    before(function (done) {
+      mongoose.connection.db.collection('applications.chunks').deleteMany({}, done);
+    })
+
+    before(function (done) {
       request(app)
         .post('/api/applications')
         .set('authorization', 'Bearer ' + token)
-        .send({
-          version: '1.0.0',
-          platform: 'android'
-        })
+        .field('version', '1.0.0')
+        .field('platform', 'android')
+        .attach('application', 'package.json')
         .expect(201)
         .end((err, res) => {
           if (err) {
@@ -90,16 +99,26 @@ describe('Application API:', function () {
       newApplication.version.should.equal('1.0.0');
       newApplication.platform.should.equal('android');
       newApplication.createdAt.should.not.equal(newApplication.updatedAt);
+
+    });
+
+    it('should have the file in application.files', function (done) {
+      gfs.exist({
+        _id: newApplication.file,
+        root: 'applications'
+      }, function (err, found) {
+        found.should.equal(true);
+        done(err);
+      });
     });
 
     it('should respond with 500 when bad version', function (done) {
       request(app)
         .post('/api/applications')
         .set('authorization', 'Bearer ' + token)
-        .send({
-          version: 'wrong',
-          platform: 'android'
-        })
+        .field('version', 'wrong')
+        .field('platform', 'android')
+        .attach('application', 'package.json')
         .expect(500)
         .end((err, res) => {
           if (err) {
@@ -110,14 +129,24 @@ describe('Application API:', function () {
         });
     });
 
+    it('should not have the file if version error', function (done) {
+      gfs.exist({
+          filename: 'ActivIn_vwrong.apk',
+          root: 'applications'
+        },
+        function (err, found) {
+          found.should.equal(false);
+          done(err);
+        });
+    });
+
     it('should respond with 500 when bad platform', function (done) {
       request(app)
         .post('/api/applications')
         .set('authorization', 'Bearer ' + token)
-        .send({
-          version: '1.0.0',
-          platform: 'wrong'
-        })
+        .field('version', '1.0.0')
+        .field('platform', 'wrong')
+        .attach('application', 'package.json')
         .expect(500)
         .end((err, res) => {
           if (err) {
@@ -127,14 +156,23 @@ describe('Application API:', function () {
           done();
         });
     });
+
+    it('should not have the file if platform error', function (done) {
+      mongoose.connection.db.collection('applications.files')
+        .find()
+        .toArray(function (err, files) {
+          files.should.have.length(1);
+          done();
+        });
+    });
   });
 
-  describe('GET /api/applications/:id', function () {
+  describe('GET /api/applications/:platform', function () {
     var application;
 
     beforeEach(function (done) {
       request(app)
-        .get('/api/applications/' + newApplication._id)
+        .get('/api/applications/android/' + newApplication._id)
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {

@@ -12,6 +12,18 @@
 import _ from 'lodash';
 import Application from './application.model';
 
+import fs from 'fs';
+import mongoose from 'mongoose';
+import Grid from 'gridfs-stream';
+
+var gfs;
+Grid.mongo = mongoose.mongo;
+mongoose.connection.once('open', function () {
+  gfs = Grid(mongoose.connection.db);
+})
+
+const root = 'applications';
+
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
   return function (entity) {
@@ -76,9 +88,31 @@ export function show(req, res) {
 
 // Creates a new Application in the DB
 export function create(req, res) {
-  Application.createAsync(req.body)
-    .then(respondWithResult(res, 201))
-    .catch(handleError(res));
+  var body = req.body;
+  var file = req.file;
+
+  // streaming to gridfs
+  var ws = gfs.createWriteStream({
+    filename: file.filename,
+    root: root
+  });
+
+  ws.on('close', function (file) {
+    fs.unlinkSync(req.file.path);
+    body.file = file._id;
+    Application.createAsync(body)
+      .then(respondWithResult(res, 201))
+      .catch(err => {
+        gfs.remove({
+          _id: file._id,
+          root: root
+        }, function () {
+          handleError(res)(err);
+        });
+      });
+  });
+
+  fs.createReadStream(req.file.path).pipe(ws);
 }
 
 // Updates an existing Application in the DB
