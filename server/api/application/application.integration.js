@@ -47,29 +47,6 @@ describe('Application API:', function () {
     return User.removeAsync();
   });
 
-  describe('GET /api/applications/:platform', function () {
-    var applications;
-
-    beforeEach(function (done) {
-      request(app)
-        .get('/api/applications/android')
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-          applications = res.body;
-          done();
-        });
-    });
-
-    it('should respond with JSON array', function () {
-      applications.should.be.instanceOf(Array);
-    });
-
-  });
-
   describe('POST /api/applications', function () {
     before(function (done) {
       mongoose.connection.db.collection('applications.files').deleteMany({}, done);
@@ -168,18 +145,56 @@ describe('Application API:', function () {
   });
 
   describe('GET /api/applications/:platform', function () {
-    var application;
+    var applications;
 
     beforeEach(function (done) {
       request(app)
-        .get('/api/applications/android/' + newApplication._id)
+        .get('/api/applications/android')
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
           if (err) {
             return done(err);
           }
-          application = res.body;
+          applications = res.body;
+          done();
+        });
+    });
+
+    it('should respond with JSON array', function () {
+      applications.should.be.instanceOf(Array);
+    });
+
+    it('should have length 1', function () {
+      applications.should.have.length(1);
+    });
+
+    it('should have length 0', function (done) {
+      request(app)
+        .get('/api/applications/ios')
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          res.body.should.have.length(0);
+          done();
+        });
+    });
+
+  });
+
+  describe.skip('GET /api/applications/:platform/:id', function () {
+    var application;
+
+    beforeEach(function (done) {
+      request(app)
+        .get('/api/applications/android/' + newApplication._id)
+        .expect(200)
+        .expect('Content-Type', 'application/octet-stream')
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          application = res;
           done();
         });
     });
@@ -188,9 +203,8 @@ describe('Application API:', function () {
       application = {};
     });
 
-    it('should respond with the requested application', function () {
-      newApplication.version.should.equal('1.0.0');
-      newApplication.platform.should.equal('android');
+    it('should respond with the requested application for download', function () {
+      console.log(application);
     });
 
   });

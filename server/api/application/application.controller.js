@@ -73,7 +73,9 @@ function handleError(res, statusCode) {
 
 // Gets a list of Applications
 export function index(req, res) {
-  Application.findAsync()
+  Application.findAsync({
+      platform: req.params.platform
+    })
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
