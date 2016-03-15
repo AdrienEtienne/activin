@@ -5,12 +5,12 @@ import User from './user.model';
 import Location from '../location/location.model';
 import request from 'supertest';
 
-describe('User API:', function () {
+describe('User API:', function() {
   var user;
 
   // Clear users before testing
-  before(function () {
-    return User.removeAsync().then(function () {
+  before(function() {
+    return User.removeAsync().then(function() {
       user = new User({
         name: 'Fake User',
         email: 'test@example.com',
@@ -22,13 +22,13 @@ describe('User API:', function () {
   });
 
   // Clear users after testing
-  after(function () {
+  after(function() {
     return User.removeAsync();
   });
 
   var token;
 
-  before(function (done) {
+  before(function(done) {
     request(app)
       .post('/auth/local')
       .send({
@@ -43,9 +43,9 @@ describe('User API:', function () {
       });
   });
 
-  describe('GET /api/users/me', function () {
+  describe('GET /api/users/me', function() {
 
-    it('should respond with a user profile when authenticated', function (done) {
+    it('should respond with a user profile when authenticated', function(done) {
       request(app)
         .get('/api/users/me')
         .set('authorization', 'Bearer ' + token)
@@ -57,7 +57,7 @@ describe('User API:', function () {
         });
     });
 
-    it('should respond with a 401 when not authenticated', function (done) {
+    it('should respond with a 401 when not authenticated', function(done) {
       request(app)
         .get('/api/users/me')
         .expect(401)
@@ -65,11 +65,11 @@ describe('User API:', function () {
     });
   });
 
-  describe('Location', function () {
+  describe('Location', function() {
     var location;
 
-    before('Create Location', function () {
-      return Location.removeAsync().then(function () {
+    before('Create Location', function() {
+      return Location.removeAsync().then(function() {
         location = new Location({
           name: 'New Location',
           location: [-95.56, 29.735]
@@ -79,59 +79,72 @@ describe('User API:', function () {
       });
     });
 
-    after(function () {
+    after(function() {
       return Location.removeAsync();
     });
 
-    describe('PUT /api/users/:id/location', function () {
-      it('should have no location by default', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+    describe('PUT /api/users/:id/setLocation', function() {
+      it('should have no location by default', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
+          assert.equal(result.keepLocation, true);
           assert.equal(result.location, undefined);
           done();
         });
       });
 
-      it('should respond with an 201', function (done) {
+      it('should respond with an 201', function(done) {
         request(app)
-          .put('/api/users/' + user._id + '/location')
-          .send([-95.56, 29.735])
+          .put('/api/users/' + user._id + '/setLocation')
+          .send({
+            location: [-95.56, 29.735]
+          })
           .set('authorization', 'Bearer ' + token)
           .expect(204)
           .end(done);
       });
 
-      it('should have one location', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+      it('should have one location', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
           result.location.should.deep.equal([-95.56, 29.735]);
           done();
         });
       });
 
-      it('should respond with an 201', function (done) {
+      it('should respond with an 201', function(done) {
         request(app)
-          .put('/api/users/' + user._id + '/location')
+          .put('/api/users/' + user._id + '/setLocation')
+          .send({
+            keepLocation: false
+          })
           .set('authorization', 'Bearer ' + token)
           .expect(204)
           .end(done);
       });
 
-      it('should have no location', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+      it('should have no location', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
           assert.equal(result.location, undefined);
+          done();
+        });
+      });
+
+      it('should have keepLocation at false', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
+          assert.equal(result.keepLocation, false);
           done();
         });
       });
     });
 
-    describe('PUT /api/users/:id/addLocation', function () {
-      it('should have zero location', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+    describe('PUT /api/users/:id/addLocation', function() {
+      it('should have zero location', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
           result.locations.should.have.length(0);
           done();
         });
       });
 
-      it('should respond with an 201', function (done) {
+      it('should respond with an 201', function(done) {
         request(app)
           .put('/api/users/' + user._id + '/addLocation')
           .send(location)
@@ -140,14 +153,14 @@ describe('User API:', function () {
           .end(done);
       });
 
-      it('should have one location', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+      it('should have one location', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
           result.locations.should.have.length(1);
           done();
         });
       });
 
-      it('should respond with an 403 if location already added', function (done) {
+      it('should respond with an 403 if location already added', function(done) {
         request(app)
           .put('/api/users/' + user._id + '/addLocation')
           .send(location)
@@ -157,8 +170,8 @@ describe('User API:', function () {
       });
     });
 
-    describe('PUT /api/users/:id/deleteLocation', function () {
-      it('should respond with an 201', function (done) {
+    describe('PUT /api/users/:id/deleteLocation', function() {
+      it('should respond with an 201', function(done) {
         request(app)
           .put('/api/users/' + user._id + '/deleteLocation')
           .send(location)
@@ -167,14 +180,14 @@ describe('User API:', function () {
           .end(done);
       });
 
-      it('should have zero location', function (done) {
-        User.findByIdAsync(user._id).then(function (result) {
+      it('should have zero location', function(done) {
+        User.findByIdAsync(user._id).then(function(result) {
           result.locations.should.have.length(0);
           done();
         }).catch(done);
       });
 
-      it('should respond with an 403 if location not present', function (done) {
+      it('should respond with an 403 if location not present', function(done) {
         request(app)
           .put('/api/users/' + user._id + '/deleteLocation')
           .send(location)

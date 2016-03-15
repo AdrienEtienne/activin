@@ -8,14 +8,14 @@ import _ from 'lodash';
 
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
-  return function (err) {
+  return function(err) {
     res.status(statusCode).json(err);
   }
 }
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function (err) {
+  return function(err) {
     res.status(statusCode).send(err);
   };
 }
@@ -40,7 +40,7 @@ export function create(req, res, next) {
   newUser.provider = 'local';
   newUser.role = 'user';
   newUser.saveAsync()
-    .spread(function (user) {
+    .spread(function(user) {
       var token = jwt.sign({
         _id: user._id
       }, config.secrets.session, {
@@ -75,7 +75,7 @@ export function show(req, res, next) {
  */
 export function destroy(req, res) {
   User.findByIdAndRemoveAsync(req.params.id)
-    .then(function () {
+    .then(function() {
       res.status(204).end();
     })
     .catch(handleError(res));
@@ -134,10 +134,12 @@ export function authCallback(req, res, next) {
  */
 export function setLocation(req, res, next) {
   var userId = req.user._id;
-  var location = _.isEmpty(req.body) ? null : req.body;
+  var keepLocation = _.isBoolean(req.body.keepLocation) ? req.body.keepLocation : true;
+  var location = _.isEmpty(req.body.location) ? null : req.body.location;
 
   User.findByIdAsync(userId)
     .then(user => {
+      user.keepLocation = keepLocation;
       user.location = location;
       return user.saveAsync().then(() => {
           res.status(204).end();
@@ -155,7 +157,7 @@ export function addLocation(req, res, next) {
 
   User.findByIdAsync(userId)
     .then(user => {
-      if (!_.find(user.locations, function (loc) {
+      if (!_.find(user.locations, function(loc) {
           return loc.toString() === location._id;
         })) {
         user.locations.push(location);
@@ -178,7 +180,7 @@ export function deleteLocation(req, res, next) {
 
   User.findByIdAsync(userId)
     .then(user => {
-      var locationId = _.remove(user.locations, function (loc) {
+      var locationId = _.remove(user.locations, function(loc) {
         return loc.toString() === location._id;
       });
       if (locationId.length > 0) {
