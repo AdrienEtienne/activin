@@ -15,8 +15,10 @@ describe('Controller: MainController', function () {
   // Initialize the controller and a mock scope
   beforeEach(inject(function (_$httpBackend_, $controller, $rootScope, $state) {
     $httpBackend = _$httpBackend_;
-    $httpBackend.expectGET('/api/sports')
-      .respond(['Running', 'Cycling', 'Soccer']);
+    $httpBackend.expectGET('/api/applications/android/last')
+      .respond({
+        version: '1.0.0'
+      });
 
     scope = $rootScope.$new();
     state = $state;
@@ -25,8 +27,8 @@ describe('Controller: MainController', function () {
     });
   }));
 
-  it('should attach a list of sports to the controller', function () {
+  it('should attach an android app object', function () {
     $httpBackend.flush();
-    expect(MainController.sports.length).toBe(3);
+    expect(MainController.android.version).toEqual('1.0.0');
   });
 });

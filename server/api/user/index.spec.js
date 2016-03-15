@@ -7,17 +7,18 @@ var userCtrlStub = {
   destroy: 'userCtrl.destroy',
   me: 'userCtrl.me',
   changePassword: 'userCtrl.changePassword',
+  setLocation: 'userCtrl.setLocation',
   show: 'userCtrl.show',
   create: 'userCtrl.create'
 };
 
 var authServiceStub = {
   isAuthenticated() {
-    return 'authService.isAuthenticated';
-  },
-  hasRole(role) {
-    return 'authService.hasRole.' + role;
-  }
+      return 'authService.isAuthenticated';
+    },
+    hasRole(role) {
+      return 'authService.hasRole.' + role;
+    }
 };
 
 var routerStub = {
@@ -104,4 +105,15 @@ describe('User API Router:', function() {
 
   });
 
+
+  describe('User Location', function() {
+
+    describe('PUT /api/users/:id/setLocation', function() {
+      it('should be authenticated and route to user.controller.setLocation', function() {
+        routerStub.put
+          .withArgs('/:id/setLocation', 'authService.isAuthenticated', 'userCtrl.setLocation')
+          .should.have.been.calledOnce;
+      });
+    });
+  });
 });

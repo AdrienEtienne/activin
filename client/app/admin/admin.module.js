@@ -1,6 +1,7 @@
 'use strict';
 
 angular.module('activinApp.admin', [
-  'activinApp.auth',
-  'ui.router'
+	'activinApp.auth',
+	'ui.router',
+	'ngFileUpload'
 ]);

@@ -4,6 +4,7 @@ import User from './user.model';
 import passport from 'passport';
 import config from '../../config/environment';
 import jwt from 'jsonwebtoken';
+import _ from 'lodash';
 
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
@@ -40,10 +41,14 @@ export function create(req, res, next) {
   newUser.role = 'user';
   newUser.saveAsync()
     .spread(function(user) {
-      var token = jwt.sign({ _id: user._id }, config.secrets.session, {
+      var token = jwt.sign({
+        _id: user._id
+      }, config.secrets.session, {
         expiresIn: 60 * 60 * 5
       });
-      res.json({ token });
+      res.json({
+        token
+      });
     })
     .catch(validationError(res));
 }
@@ -105,7 +110,9 @@ export function changePassword(req, res, next) {
 export function me(req, res, next) {
   var userId = req.user._id;
 
-  User.findOneAsync({ _id: userId }, '-salt -password')
+  User.findOneAsync({
+      _id: userId
+    }, '-salt -password')
     .then(user => { // don't ever give out the password or salt
       if (!user) {
         return res.status(401).end();
@@ -120,4 +127,23 @@ export function me(req, res, next) {
  */
 export function authCallback(req, res, next) {
   res.redirect('/');
+}
+
+/**
+ * SetLocation
+ */
+export function setLocation(req, res, next) {
+  var userId = req.user._id;
+  var keepLocation = _.isBoolean(req.body.keepLocation) ? req.body.keepLocation : true;
+  var location = _.isEmpty(req.body.location) ? null : req.body.location;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      user.keepLocation = keepLocation;
+      user.location = location;
+      return user.saveAsync().then(() => {
+          res.status(204).end();
+        })
+        .catch(validationError(res));
+    });
 }
