@@ -7,6 +7,11 @@ var PlaceSchema = new mongoose.Schema({
     type: String,
     require: true
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    require: true
+  },
   location: {
     type: [Number],
     index: '2d'

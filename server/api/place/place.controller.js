@@ -61,7 +61,9 @@ function handleError(res, statusCode) {
 
 // Gets a list of Places
 export function index(req, res) {
-  Place.findAsync()
+  Place.findAsync({
+      user: req.user._id
+    })
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
@@ -76,7 +78,10 @@ export function show(req, res) {
 
 // Creates a new Place in the DB
 export function create(req, res) {
-  Place.createAsync(req.body)
+  var userId = req.user._id;
+  var place = req.body;
+  place.user = userId;
+  Place.createAsync(place)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
@@ -95,7 +100,10 @@ export function update(req, res) {
 
 // Deletes a Place from the DB
 export function destroy(req, res) {
-  Place.findByIdAsync(req.params.id)
+  Place.findOneAsync({
+      user: req.user._id,
+      _id: req.params.id
+    })
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));

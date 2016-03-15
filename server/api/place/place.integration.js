@@ -8,7 +8,9 @@ var newPlace;
 
 describe('Place API:', function() {
   var user;
+  var otherUser;
   var token;
+  var otherToken;
 
   // Clear users before testing
   before('Add user', function() {
@@ -21,6 +23,16 @@ describe('Place API:', function() {
 
       return user.saveAsync();
     });
+  });
+
+  before('Add other user', function() {
+    otherUser = new User({
+      name: 'Fake User2',
+      email: 'test2@example.com',
+      password: 'password'
+    });
+
+    return otherUser.saveAsync();
   });
 
   before('Get token', function(done) {
@@ -38,43 +50,28 @@ describe('Place API:', function() {
       });
   });
 
+  before('Get token other user', function(done) {
+    request(app)
+      .post('/auth/local')
+      .send({
+        email: 'test2@example.com',
+        password: 'password'
+      })
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        otherToken = res.body.token;
+        done();
+      });
+  });
+
   // Clear users after testing
   after('Remove User', function() {
     return User.removeAsync();
   });
 
-  describe('GET /api/places', function() {
-    var places;
-
-    beforeEach(function(done) {
-      request(app)
-        .get('/api/places')
-        .set('authorization', 'Bearer ' + token)
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-          places = res.body;
-          done();
-        });
-    });
-
-    it('should respond with JSON array', function() {
-      places.should.be.instanceOf(Array);
-    });
-
-    it('should respond 401 when not authorized', function(done) {
-      request(app)
-        .get('/api/places')
-        .expect(401)
-        .end(done);
-    });
-  });
-
   describe('POST /api/places', function() {
-    beforeEach(function(done) {
+    before(function(done) {
       request(app)
         .post('/api/places')
         .set('authorization', 'Bearer ' + token)
@@ -98,6 +95,49 @@ describe('Place API:', function() {
       newPlace.location.should.deep.equal([-95.56, 29.735]);
     });
 
+    it('should respond with the user reference', function() {
+      newPlace.user.should.equal(user._id.toString());
+    });
+  });
+
+  describe('GET /api/places', function() {
+    var places;
+
+    before(function(done) {
+      request(app)
+        .get('/api/places')
+        .set('authorization', 'Bearer ' + token)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          places = res.body;
+          done();
+        });
+    });
+
+    it('should respond with JSON array', function() {
+      places.should.be.instanceOf(Array);
+    });
+
+    it('should respond one element', function() {
+      places.should.have.length(1);
+    });
+
+    it('should respond zero element when bad user', function(done) {
+      request(app)
+        .get('/api/places')
+        .set('authorization', 'Bearer ' + otherToken)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          res.body.should.have.length(0);
+          done();
+        });
+    });
   });
 
   describe('GET /api/places/:id', function() {
@@ -126,7 +166,6 @@ describe('Place API:', function() {
       place.name.should.equal('New Place');
       place.location.should.deep.equal([-95.56, 29.735]);
     });
-
   });
 
   describe('PUT /api/places/:id', function() {
@@ -163,6 +202,19 @@ describe('Place API:', function() {
   });
 
   describe('DELETE /api/places/:id', function() {
+
+    it('should respond with 404 when place not to the user', function(done) {
+      request(app)
+        .delete('/api/places/' + newPlace._id)
+        .set('authorization', 'Bearer ' + otherToken)
+        .expect(404)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          done();
+        });
+    });
 
     it('should respond with 204 on successful removal', function(done) {
       request(app)
