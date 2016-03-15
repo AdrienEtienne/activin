@@ -25,6 +25,10 @@ var UserSchema = new Schema({
   facebook: {},
   google: {},
   github: {},
+  keepLocation: {
+    type: Boolean,
+    default: true
+  },
   location: {
     type: [Number],
     index: '2d',
@@ -43,7 +47,7 @@ var UserSchema = new Schema({
 // Public profile information
 UserSchema
   .virtual('profile')
-  .get(function () {
+  .get(function() {
     return {
       'name': this.name,
       'role': this.role
@@ -53,7 +57,7 @@ UserSchema
 // Non-sensitive info we'll be putting in the token
 UserSchema
   .virtual('token')
-  .get(function () {
+  .get(function() {
     return {
       '_id': this._id,
       'role': this.role
@@ -67,7 +71,7 @@ UserSchema
 // Validate empty email
 UserSchema
   .path('email')
-  .validate(function (email) {
+  .validate(function(email) {
     if (authTypes.indexOf(this.provider) !== -1) {
       return true;
     }
@@ -77,7 +81,7 @@ UserSchema
 // Validate empty password
 UserSchema
   .path('password')
-  .validate(function (password) {
+  .validate(function(password) {
     if (authTypes.indexOf(this.provider) !== -1) {
       return true;
     }
@@ -87,12 +91,12 @@ UserSchema
 // Validate email is not taken
 UserSchema
   .path('email')
-  .validate(function (value, respond) {
+  .validate(function(value, respond) {
     var self = this;
     return this.constructor.findOneAsync({
         email: value
       })
-      .then(function (user) {
+      .then(function(user) {
         if (user) {
           if (self.id === user.id) {
             return respond(true);
@@ -101,12 +105,12 @@ UserSchema
         }
         return respond(true);
       })
-      .catch(function (err) {
+      .catch(function(err) {
         throw err;
       });
   }, 'The specified email address is already in use.');
 
-var validatePresenceOf = function (value) {
+var validatePresenceOf = function(value) {
   return value && value.length;
 };
 
@@ -114,7 +118,11 @@ var validatePresenceOf = function (value) {
  * Pre-save hook
  */
 UserSchema
-  .pre('save', function (next) {
+  .pre('save', function(next) {
+    if (!this.keepLocation) {
+      this.location = [];
+    }
+
     // Handle new/update passwords
     if (!this.isModified('password')) {
       return next();
