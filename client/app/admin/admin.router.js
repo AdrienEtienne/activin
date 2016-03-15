@@ -1,13 +1,12 @@
 'use strict';
 
 angular.module('activinApp.admin')
-  .config(function($stateProvider) {
+  .config(function ($stateProvider) {
     $stateProvider
       .state('admin', {
         url: '/admin',
         templateUrl: 'app/admin/admin.html',
         controller: 'AdminController',
-        controllerAs: 'admin',
         authenticate: 'admin'
       });
   });

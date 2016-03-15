@@ -1,38 +1,75 @@
 <div class="container">
   <h3>The delete user and user index api routes are restricted to users with the 'admin' role.</h3>
   <ul class="list-group user-list">
-    <li class="list-group-item" ng-repeat="user in admin.users">
+    <li class="list-group-item" ng-repeat="user in users">
       <div class="user-info">
         <strong>{{user.name}}</strong><br>
         <span class="text-muted">{{user.email}}</span>
       </div>
-      <a ng-click="admin.delete(user)" class="trash"><span class="fa fa-trash fa-2x"></span></a>
+      <a ng-click="delete(user)" class="trash"><span class="fa fa-trash fa-2x"></span></a>
     </li>
   </ul>
   <h3>Upload application</h3>
-  <form name="applicationForm" ng-submit="admin.uploadApplication(applicationForm)" novalidate>
-    <!-- VERSION -->
-    <div class="form-group" ng-class="{ 'has-error' : applicationForm.version.$invalid && !applicationForm.version.$pristine }">
-      <label>Version</label>
-      <input type="text" name="version" class="form-control" ng-model="application.version" ng-pattern="admin.regexVersion" required>
-      <p ng-show="applicationForm.version.$error.pattern" class="help-block">Not a version pattern.</p>
+  <form name="applicationForm" ng-submit="upload(applicationForm, applicationFile)" novalidate>
+    <div class="row">
+      <div class="col-md-3">
+        <!-- VERSION -->
+        <div class="form-group" ng-class="{ 'has-error' : applicationForm.version.$invalid && !applicationForm.version.$pristine }">
+          <label>Version</label>
+          <input type="text" name="version" class="form-control" ng-model="application.version" ng-pattern="regexVersion" required>
+          <p ng-show="applicationForm.version.$error.pattern" class="help-block">Not a version pattern.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <!-- PLATFORM -->
+        <div class="form-group" ng-class="{ 'has-error' : applicationForm.platform.$invalid && !applicationForm.platform.$pristine }">
+          <label>Platform</label>
+          <select class="form-control" name="platform" id="platform" ng-model="application.platform" required>
+            <option value="android">Android</option>
+            <option value="ios">iOS</option>
+          </select>
+          <p ng-show="applicationForm.platform.$error.select" class="help-block">Platform has to be selected.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <!-- FILE -->
+        <div class="form-group" ng-class="{ 'has-error' : applicationForm.file.$invalid && !applicationForm.file.$pristine }">
+          <label>Application</label>
+          <input type="file" ngf-select ng-model="application.file" name="file" accept="application/*" required ngf-model-invalid="errorFile">
+          <p ng-show="applicationForm.file.$error.select" class="help-block">Application has to be chosen.</p>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div><label>Submit</label></div>
+        <button type="submit" class="btn btn-primary" ng-disabled="applicationForm.$invalid">Upload</button>
+        <p class="bg-success" ng-show="uploadSuccess">Upload success.</p>
+      </div>
     </div>
-    <!-- PLATFORM -->
-    <div class="form-group" ng-class="{ 'has-error' : applicationForm.platform.$invalid && !applicationForm.platform.$pristine }">
-      <label>Platform</label>
-      <select class="form-control" name="platform" id="platform" ng-model="application.platform" required>
-        <option value="android">Android</option>
-        <option value="ios">iOS</option>
-      </select>
-      <p ng-show="applicationForm.platform.$error.select" class="help-block">Platform has to be selected.</p>
-    </div>
-    <!-- FILE -->
-    <div class="form-group" ng-class="{ 'has-error' : applicationForm.file.$invalid && !applicationForm.file.$pristine }">
-      <label>Application</label>
-      <input type="file" name="file" class="form-control" ng-model="application.file">
-      <p ng-show="applicationForm.file.$error.select" class="help-block">Application has to be chosen.</p>
-    </div>
-    <button type="submit" class="btn btn-primary" ng-disabled="applicationForm.$invalid">Submit</button>
   </form>
-  {{application}}
+  <div class="row">
+    <div class="col-md-3">
+      <h4>Android</h4>
+      <ul class="list-group user-list">
+        <li class="list-group-item" ng-repeat="android in androids">
+          <div class="user-info">
+            <strong>{{android.version}}</strong><br>
+            <span class="text-muted">{{android.createdAt| date:"dd/MM/yyyy 'at' h:mma"}}</span>
+          </div>
+          <a ng-click="deleteApplication(android)" class="trash"><span class="fa fa-trash fa-2x"></span></a>
+        </li>
+      </ul>
+    </div>
+    <div class="col-md-3">
+      <h4>iOS</h4>
+      <ul class="list-group user-list">
+        <li class="list-group-item" ng-repeat="ios in ioss">
+          <div class="user-info">
+            <strong>{{ios.version}}</strong><br>
+            <span class="text-muted">{{ios.createdAt| date:"dd/MM/yyyy 'at' h:mma"}}</span>
+          </div>
+          <a ng-click="deleteApplication(ios)" class="trash"><span class="fa fa-trash fa-2x"></span></a>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>

@@ -17,9 +17,8 @@ import mongoose from 'mongoose';
 import Grid from 'gridfs-stream';
 
 var gfs;
-Grid.mongo = mongoose.mongo;
 mongoose.connection.once('open', function () {
-  gfs = Grid(mongoose.connection.db);
+  gfs = new Grid(mongoose.connection.db, mongoose.mongo);
 });
 
 const root = 'applications';
@@ -102,21 +101,29 @@ export function show(req, res) {
 
 // Gets a single Application from the DB
 export function download(req, res) {
-  var readstream = gfs.createReadStream({
+
+  gfs.findOne({
     _id: req.params.id,
     root: root
-  });
+  }, function (err, file) {
+    var extension = req.params.platform === 'android' ? 'apk' : 'exe';
+    if (err) return res.status(400).send(err);
+    if (!file) return res.status(404).send('');
 
-  readstream.on('open', function () {
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.status(200);
-  });
+    res.setHeader('Content-Type', file.contentType);
+    res.setHeader('Content-Disposition', 'attachment; filename="ActivIn.' + extension + '"');
 
-  readstream.on('error', function (err) {
-    return res.status(403).json(err);
-  });
+    var readstream = gfs.createReadStream({
+      _id: req.params.id,
+      root: root
+    });
 
-  readstream.pipe(res);
+    readstream.on("error", function (err) {
+      res.end();
+    });
+
+    readstream.pipe(res);
+  });
 }
 
 // Creates a new Application in the DB

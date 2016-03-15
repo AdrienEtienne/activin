@@ -5,11 +5,11 @@
   class MainController {
 
     constructor($http) {
+      var that = this;
       this.$http = $http;
-      this.sports = [];
 
-      $http.get('/api/sports').then(response => {
-        this.sports = response.data;
+      $http.get('/api/applications/android/last').then(response => {
+        that.android = response.data;
       });
     }
   }

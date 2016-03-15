@@ -235,7 +235,7 @@ describe('Application API:', function () {
     it('should download a file', function (done) {
       request(app)
         .get('/api/applications/android/download/' + newApplication.file)
-        .expect('Content-Type', 'application/octet-stream')
+        .expect('Content-Type', 'binary/octet-stream')
         .expect(200)
         .end(done);
     });
@@ -243,7 +243,7 @@ describe('Application API:', function () {
     it('should return an error', function (done) {
       request(app)
         .get('/api/applications/android/download/' + newApplication._id)
-        .expect(403)
+        .expect(404)
         .end(done);
     });
   });

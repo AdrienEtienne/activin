@@ -6,20 +6,21 @@
   </div>
 </header>
 <div class="container">
-  <div class="row">
-    <div class="col-lg-6">
-      <h1>Features:</h1>
-      <ul class="nav nav-tabs col-md-4 col-lg-4 col-sm-6">
-        <li>Choose your sports</li>
-      </ul>
-    </ul>
-  </div>
-  <div class="col-lg-6">
-      <h1>Sports:</h1>
-      <ul class="nav nav-tabs col-md-4 col-lg-4 col-sm-6" ng-repeat="sport in main.sports">
-        <li><span ng-bind="sport.name"></span></li>
-      </ul>
-    </ul>
-  </div>
-</div>
+  <h1>Download mobile application</h1>
+  <a ng-show="main.android.version" target="_self" ng-href="/api/applications/android/download/{{main.android.file}}" download="ActivIn.apk">
+    <button type="button" class="btn btn-success btn-lg" >
+    Android v<small ng-bind="main.android.version"></small>
+    </button>
+  </a>
+  <button ng-show="!main.android.version" type="button" class="btn btn-success btn-lg" ng-disabled="true">
+  Android App not available yet<small ng-bind="main.android.version"></small>
+  </button>
+  <a ng-show="main.ios.version" target="_self" ng-href="/api/applications/ios/download/{{main.ios.file}}">
+    <button type="button" class="btn btn-info btn-lg" >
+    iOS v<small ng-bind="main.ios.version"></small>
+    </button>
+  </a>
+  <button ng-show="!main.ios.version" type="button" class="btn btn-info btn-lg" ng-disabled="true">
+  iOS App not available yet<small ng-bind="main.ios.version"></small>
+  </button>
 </div>
