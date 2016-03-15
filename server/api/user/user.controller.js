@@ -130,7 +130,7 @@ export function authCallback(req, res, next) {
 }
 
 /**
- * AddLocation
+ * SetLocation
  */
 export function setLocation(req, res, next) {
   var userId = req.user._id;
@@ -145,52 +145,5 @@ export function setLocation(req, res, next) {
           res.status(204).end();
         })
         .catch(validationError(res));
-    });
-}
-
-/**
- * AddLocation
- */
-export function addLocation(req, res, next) {
-  var userId = req.user._id;
-  var location = req.body;
-
-  User.findByIdAsync(userId)
-    .then(user => {
-      if (!_.find(user.locations, function(loc) {
-          return loc.toString() === location._id;
-        })) {
-        user.locations.push(location);
-        return user.saveAsync().then(() => {
-            res.status(204).end();
-          })
-          .catch(validationError(res));
-      } else {
-        return res.status(403).end();
-      }
-    });
-}
-
-/**
- * DeleteLocation
- */
-export function deleteLocation(req, res, next) {
-  var userId = req.user._id;
-  var location = req.body;
-
-  User.findByIdAsync(userId)
-    .then(user => {
-      var locationId = _.remove(user.locations, function(loc) {
-        return loc.toString() === location._id;
-      });
-      if (locationId.length > 0) {
-        user.markModified('locations');
-        return user.saveAsync().then(() => {
-            res.status(204).end();
-          })
-          .catch(validationError(res));
-      } else {
-        return res.status(403).end();
-      }
     });
 }

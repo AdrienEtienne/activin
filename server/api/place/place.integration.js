@@ -4,15 +4,15 @@ var app = require('../..');
 import request from 'supertest';
 import User from '../user/user.model';
 
-var newLocation;
+var newPlace;
 
-describe('Location API:', function () {
+describe('Place API:', function() {
   var user;
   var token;
 
   // Clear users before testing
-  before('Add user', function () {
-    return User.removeAsync().then(function () {
+  before('Add user', function() {
+    return User.removeAsync().then(function() {
       user = new User({
         name: 'Fake User',
         email: 'test@example.com',
@@ -23,7 +23,7 @@ describe('Location API:', function () {
     });
   });
 
-  before('Get token', function (done) {
+  before('Get token', function(done) {
     request(app)
       .post('/auth/local')
       .send({
@@ -39,16 +39,16 @@ describe('Location API:', function () {
   });
 
   // Clear users after testing
-  after('Remove User', function () {
+  after('Remove User', function() {
     return User.removeAsync();
   });
 
-  describe('GET /api/locations', function () {
-    var locations;
+  describe('GET /api/places', function() {
+    var places;
 
-    beforeEach(function (done) {
+    beforeEach(function(done) {
       request(app)
-        .get('/api/locations')
+        .get('/api/places')
         .set('authorization', 'Bearer ' + token)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -56,30 +56,30 @@ describe('Location API:', function () {
           if (err) {
             return done(err);
           }
-          locations = res.body;
+          places = res.body;
           done();
         });
     });
 
-    it('should respond with JSON array', function () {
-      locations.should.be.instanceOf(Array);
+    it('should respond with JSON array', function() {
+      places.should.be.instanceOf(Array);
     });
 
-    it('should respond 401 when not authorized', function (done) {
+    it('should respond 401 when not authorized', function(done) {
       request(app)
-        .get('/api/locations')
+        .get('/api/places')
         .expect(401)
         .end(done);
     });
   });
 
-  describe('POST /api/locations', function () {
-    beforeEach(function (done) {
+  describe('POST /api/places', function() {
+    beforeEach(function(done) {
       request(app)
-        .post('/api/locations')
+        .post('/api/places')
         .set('authorization', 'Bearer ' + token)
         .send({
-          name: 'New Location',
+          name: 'New Place',
           location: [-95.56, 29.735]
         })
         .expect(201)
@@ -88,24 +88,24 @@ describe('Location API:', function () {
           if (err) {
             return done(err);
           }
-          newLocation = res.body;
+          newPlace = res.body;
           done();
         });
     });
 
-    it('should respond with the newly created location', function () {
-      newLocation.name.should.equal('New Location');
-      newLocation.location.should.deep.equal([-95.56, 29.735]);
+    it('should respond with the newly created place', function() {
+      newPlace.name.should.equal('New Place');
+      newPlace.location.should.deep.equal([-95.56, 29.735]);
     });
 
   });
 
-  describe('GET /api/locations/:id', function () {
-    var location;
+  describe('GET /api/places/:id', function() {
+    var place;
 
-    beforeEach(function (done) {
+    beforeEach(function(done) {
       request(app)
-        .get('/api/locations/' + newLocation._id)
+        .get('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -113,60 +113,60 @@ describe('Location API:', function () {
           if (err) {
             return done(err);
           }
-          location = res.body;
+          place = res.body;
           done();
         });
     });
 
-    afterEach(function () {
-      location = {};
+    afterEach(function() {
+      place = {};
     });
 
-    it('should respond with the requested location', function () {
-      location.name.should.equal('New Location');
-      location.location.should.deep.equal([-95.56, 29.735]);
+    it('should respond with the requested place', function() {
+      place.name.should.equal('New Place');
+      place.location.should.deep.equal([-95.56, 29.735]);
     });
 
   });
 
-  describe('PUT /api/locations/:id', function () {
-    var updatedLocation;
+  describe('PUT /api/places/:id', function() {
+    var updatedPlace;
 
-    beforeEach(function (done) {
+    beforeEach(function(done) {
       request(app)
-        .put('/api/locations/' + newLocation._id)
+        .put('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
         .send({
-          name: 'Updated Location',
+          name: 'Updated Place',
           location: [1, 1]
         })
         .expect(200)
         .expect('Content-Type', /json/)
-        .end(function (err, res) {
+        .end(function(err, res) {
           if (err) {
             return done(err);
           }
-          updatedLocation = res.body;
+          updatedPlace = res.body;
           done();
         });
     });
 
-    afterEach(function () {
-      updatedLocation = {};
+    afterEach(function() {
+      updatedPlace = {};
     });
 
-    it('should respond with the updated location', function () {
-      updatedLocation.name.should.equal('Updated Location');
-      updatedLocation.location.should.deep.equal([1, 1]);
+    it('should respond with the updated place', function() {
+      updatedPlace.name.should.equal('Updated Place');
+      updatedPlace.location.should.deep.equal([1, 1]);
     });
 
   });
 
-  describe('DELETE /api/locations/:id', function () {
+  describe('DELETE /api/places/:id', function() {
 
-    it('should respond with 204 on successful removal', function (done) {
+    it('should respond with 204 on successful removal', function(done) {
       request(app)
-        .delete('/api/locations/' + newLocation._id)
+        .delete('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
         .expect(204)
         .end((err, res) => {
@@ -177,9 +177,9 @@ describe('Location API:', function () {
         });
     });
 
-    it('should respond with 404 when location does not exist', function (done) {
+    it('should respond with 404 when place does not exist', function(done) {
       request(app)
-        .delete('/api/locations/' + newLocation._id)
+        .delete('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
         .expect(404)
         .end((err, res) => {

@@ -2,7 +2,6 @@
 
 import app from '../..';
 import User from './user.model';
-import Location from '../location/location.model';
 import request from 'supertest';
 
 describe('User API:', function() {
@@ -66,22 +65,6 @@ describe('User API:', function() {
   });
 
   describe('Location', function() {
-    var location;
-
-    before('Create Location', function() {
-      return Location.removeAsync().then(function() {
-        location = new Location({
-          name: 'New Location',
-          location: [-95.56, 29.735]
-        });
-
-        return location.saveAsync();
-      });
-    });
-
-    after(function() {
-      return Location.removeAsync();
-    });
 
     describe('PUT /api/users/:id/setLocation', function() {
       it('should have no location by default', function(done) {
@@ -133,67 +116,6 @@ describe('User API:', function() {
           assert.equal(result.keepLocation, false);
           done();
         });
-      });
-    });
-
-    describe('PUT /api/users/:id/addLocation', function() {
-      it('should have zero location', function(done) {
-        User.findByIdAsync(user._id).then(function(result) {
-          result.locations.should.have.length(0);
-          done();
-        });
-      });
-
-      it('should respond with an 201', function(done) {
-        request(app)
-          .put('/api/users/' + user._id + '/addLocation')
-          .send(location)
-          .set('authorization', 'Bearer ' + token)
-          .expect(204)
-          .end(done);
-      });
-
-      it('should have one location', function(done) {
-        User.findByIdAsync(user._id).then(function(result) {
-          result.locations.should.have.length(1);
-          done();
-        });
-      });
-
-      it('should respond with an 403 if location already added', function(done) {
-        request(app)
-          .put('/api/users/' + user._id + '/addLocation')
-          .send(location)
-          .set('authorization', 'Bearer ' + token)
-          .expect(403)
-          .end(done);
-      });
-    });
-
-    describe('PUT /api/users/:id/deleteLocation', function() {
-      it('should respond with an 201', function(done) {
-        request(app)
-          .put('/api/users/' + user._id + '/deleteLocation')
-          .send(location)
-          .set('authorization', 'Bearer ' + token)
-          .expect(204)
-          .end(done);
-      });
-
-      it('should have zero location', function(done) {
-        User.findByIdAsync(user._id).then(function(result) {
-          result.locations.should.have.length(0);
-          done();
-        }).catch(done);
-      });
-
-      it('should respond with an 403 if location not present', function(done) {
-        request(app)
-          .put('/api/users/' + user._id + '/deleteLocation')
-          .send(location)
-          .set('authorization', 'Bearer ' + token)
-          .expect(403)
-          .end(done);
       });
     });
   });

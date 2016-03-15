@@ -1,20 +1,20 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/locations              ->  index
- * POST    /api/locations              ->  create
- * GET     /api/locations/:id          ->  show
- * PUT     /api/locations/:id          ->  update
- * DELETE  /api/locations/:id          ->  destroy
+ * GET     /api/places              ->  index
+ * POST    /api/places              ->  create
+ * GET     /api/places/:id          ->  show
+ * PUT     /api/places/:id          ->  update
+ * DELETE  /api/places/:id          ->  destroy
  */
 
 'use strict';
 
 import _ from 'lodash';
-import Location from './location.model';
+import Place from './place.model';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
-  return function (entity) {
+  return function(entity) {
     if (entity) {
       res.status(statusCode).json(entity);
     }
@@ -22,7 +22,7 @@ function respondWithResult(res, statusCode) {
 }
 
 function saveUpdates(updates) {
-  return function (entity) {
+  return function(entity) {
     var updated = _.merge(entity, updates);
     return updated.saveAsync()
       .spread(updated => {
@@ -32,7 +32,7 @@ function saveUpdates(updates) {
 }
 
 function removeEntity(res) {
-  return function (entity) {
+  return function(entity) {
     if (entity) {
       return entity.removeAsync()
         .then(() => {
@@ -43,7 +43,7 @@ function removeEntity(res) {
 }
 
 function handleEntityNotFound(res) {
-  return function (entity) {
+  return function(entity) {
     if (!entity) {
       res.status(404).end();
       return null;
@@ -54,48 +54,48 @@ function handleEntityNotFound(res) {
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function (err) {
+  return function(err) {
     res.status(statusCode).send(err);
   };
 }
 
-// Gets a list of Locations
+// Gets a list of Places
 export function index(req, res) {
-  Location.findAsync()
+  Place.findAsync()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Gets a single Location from the DB
+// Gets a single Place from the DB
 export function show(req, res) {
-  Location.findByIdAsync(req.params.id)
+  Place.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Creates a new Location in the DB
+// Creates a new Place in the DB
 export function create(req, res) {
-  Location.createAsync(req.body)
+  Place.createAsync(req.body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
 
-// Updates an existing Location in the DB
+// Updates an existing Place in the DB
 export function update(req, res) {
   if (req.body._id) {
     delete req.body._id;
   }
-  Location.findByIdAsync(req.params.id)
+  Place.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(saveUpdates(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Deletes a Location from the DB
+// Deletes a Place from the DB
 export function destroy(req, res) {
-  Location.findByIdAsync(req.params.id)
+  Place.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
