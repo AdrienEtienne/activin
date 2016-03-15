@@ -1,6 +1,13 @@
 language: node_js
 node_js:
   - 4.2.3
+# whitelist
+branches:
+  only:
+    - master
+    - develop
+  except:
+    - /^feature.*$/
 matrix:
   fast_finish: true
   allow_failures:
