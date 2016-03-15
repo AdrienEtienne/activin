@@ -8,8 +8,6 @@ var userCtrlStub = {
   me: 'userCtrl.me',
   changePassword: 'userCtrl.changePassword',
   setLocation: 'userCtrl.setLocation',
-  addLocation: 'userCtrl.addLocation',
-  deleteLocation: 'userCtrl.deleteLocation',
   show: 'userCtrl.show',
   create: 'userCtrl.create'
 };
@@ -117,23 +115,5 @@ describe('User API Router:', function() {
           .should.have.been.calledOnce;
       });
     });
-
-    describe('PUT /api/users/:id/addLocation', function() {
-      it('should be authenticated and route to user.controller.addLocation', function() {
-        routerStub.put
-          .withArgs('/:id/addLocation', 'authService.isAuthenticated', 'userCtrl.addLocation')
-          .should.have.been.calledOnce;
-      });
-
-    });
-
-    describe('PUT /api/users/:id/deleteLocation', function() {
-      it('should be authenticated and route to user.controller.deleteLocation', function() {
-        routerStub.put
-          .withArgs('/:id/deleteLocation', 'authService.isAuthenticated', 'userCtrl.deleteLocation')
-          .should.have.been.calledOnce;
-      });
-    });
-
   });
 });
