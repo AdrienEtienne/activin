@@ -3,6 +3,7 @@
 var app = require('../..');
 import request from 'supertest';
 import User from '../user/user.model';
+import Place from './place.model';
 
 var newPlace;
 
@@ -11,6 +12,11 @@ describe('Place API:', function() {
   var otherUser;
   var token;
   var otherToken;
+
+  // Clear users before testing
+  before('Remove places', function() {
+    return Place.removeAsync();
+  });
 
   // Clear users before testing
   before('Add user', function() {
@@ -238,6 +244,29 @@ describe('Place API:', function() {
           if (err) {
             return done(err);
           }
+          done();
+        });
+    });
+
+    it('should keep the place as hide', function(done) {
+      Place.findAsync().then(function(places) {
+        places.should.have.length(1);
+        places[0].hide.should.equal(true);
+        done();
+      });
+    });
+
+    it('should not return the deleted place', function(done) {
+      request(app)
+        .get('/api/places')
+        .set('authorization', 'Bearer ' + token)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          res.body.should.have.length(0);
           done();
         });
     });
