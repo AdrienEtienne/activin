@@ -36,6 +36,21 @@ var gmaps = {
 					}
 				});
 			});
+	},
+
+	getDetails: function (prediction) {
+		if (!isConfigured())
+			return catchKeyError();
+		else
+			return new Promise(function (resolve, reject) {
+				googlePlaces.placeDetailsRequest(prediction, function (err, response2) {
+					if (err) {
+						reject(err);
+					} else {
+						resolve(response.result);
+					}
+				})
+			});
 	}
 };
 
