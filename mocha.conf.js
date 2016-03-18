@@ -8,7 +8,7 @@ var chai = require('chai');
 // Load Chai assertions
 global.expect = chai.expect;
 global.assert = chai.assert;
-chai.should();
+global.should = chai.should();
 
 // Load Sinon
 global.sinon = require('sinon');
