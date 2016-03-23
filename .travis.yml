@@ -19,6 +19,6 @@ before_script:
   - gem install sass
   - bower install
 after_script:
-  - grunt test:coverage || true
+  - grunt test:coverage:unit || true
   - grunt coveralls
 services: mongodb
