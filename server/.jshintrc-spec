@@ -10,6 +10,7 @@
     "afterEach": true,
     "expect": true,
     "assert": true,
-    "sinon": true
+    "sinon": true,
+    "should": true
   }
 }
