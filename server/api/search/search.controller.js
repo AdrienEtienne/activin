@@ -29,3 +29,15 @@ export function predictions(req, res) {
     handleError(res, 400)(new Error('No input in request parameters'));
   }
 }
+
+export function details(req, res) {
+  var placeid = req.query.placeid || '';
+
+  if (placeid) {
+    gmaps.getDetails(placeid)
+      .then(respondWithResult(res))
+      .catch(handleError(res));
+  } else {
+    handleError(res, 400)(new Error('No placeid in request parameters'));
+  }
+}

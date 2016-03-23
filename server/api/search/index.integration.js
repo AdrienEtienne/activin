@@ -3,7 +3,8 @@
 var proxyquire = require('proxyquire').noPreserveCache();
 
 var searchCtrlStub = {
-  predictions: 'searchCtrl.predictions'
+  predictions: 'searchCtrl.predictions',
+  details: 'searchCtrl.details'
 };
 
 var routerStub = {
@@ -35,6 +36,16 @@ describe('Search API Router:', function () {
     it('should route to search.controller.predictions', function () {
       routerStub.get
         .withArgs('/predictions', 'searchCtrl.predictions')
+        .should.have.been.calledOnce;
+    });
+
+  });
+
+  describe('GET /api/searchs/details', function () {
+
+    it('should route to search.controller.details', function () {
+      routerStub.get
+        .withArgs('/details', 'searchCtrl.details')
         .should.have.been.calledOnce;
     });
 

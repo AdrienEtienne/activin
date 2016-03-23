@@ -7,8 +7,7 @@ var newSearch;
 
 describe('Search API:', function () {
 
-  describe('GET /api/searchs', function () {
-    var searchs;
+  describe('GET /api/searchs/predictions', function () {
 
     it('should respond 400', function (done) {
       request(app)
@@ -30,4 +29,38 @@ describe('Search API:', function () {
     });
   });
 
+  describe('GET /api/searchs/details', function () {
+    var prediction;
+
+    before(function (done) {
+      request(app)
+        .get('/api/searchs/predictions?input=Paris')
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          prediction = res.body[0];
+          done(err);
+        });
+    });
+
+    it('should respond 400', function (done) {
+      request(app)
+        .get('/api/searchs/details')
+        .expect(400)
+        .expect('Content-Type', /json/)
+        .end(done);
+    });
+
+    it('should respond with place detailes', function (done) {
+      request(app)
+        .get('/api/searchs/details?placeid=' + prediction.placeid)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          console.log(res.body)
+          res.body.placeid.should.equal(prediction.placeid);
+          done(err);
+        });
+    });
+  });
 });

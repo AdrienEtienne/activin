@@ -6,5 +6,6 @@ var controller = require('./search.controller');
 var router = express.Router();
 
 router.get('/predictions', controller.predictions);
+router.get('/details', controller.details);
 
 module.exports = router;

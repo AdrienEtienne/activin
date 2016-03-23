@@ -55,6 +55,7 @@ var gmaps = {
 					reject(new Error(response.error_message));
 				} else {
 					resolve({
+						placeid: placeid,
 						name: response.result.name,
 						location: response.result.geometry.location
 					});
