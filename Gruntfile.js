@@ -662,11 +662,6 @@ module.exports = function (grunt) {
         force: true
       },
 
-      server_integration: {
-        // LCOV coverage file (can be string, glob or array)
-        src: './coverage/server/integration/lcov.info'
-      },
-
       server_unit: {
         // LCOV coverage file (can be string, glob or array)
         src: './coverage/server/unit/lcov.info'
