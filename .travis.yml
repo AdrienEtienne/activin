@@ -6,6 +6,7 @@ branches:
   only:
     - master
     - develop
+    - test
   except:
     - /^feature.*$/
 matrix:
@@ -17,4 +18,8 @@ before_script:
   - npm install -g bower grunt-cli
   - gem install sass
   - bower install
+after_script:
+  - grunt test:coverage || true
+after_success:
+  - grunt coveralls
 services: mongodb
