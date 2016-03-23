@@ -51,13 +51,12 @@ describe('Search API:', function () {
         .end(done);
     });
 
-    it('should respond with place detailes', function (done) {
+    it('should respond with place details', function (done) {
       request(app)
         .get('/api/searchs/details?placeid=' + prediction.placeid)
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
-          console.log(res.body)
           res.body.placeid.should.equal(prediction.placeid);
           done(err);
         });
