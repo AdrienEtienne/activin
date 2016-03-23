@@ -20,6 +20,5 @@ before_script:
   - bower install
 after_script:
   - grunt test:coverage || true
-after_success:
   - grunt coveralls
 services: mongodb
