@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/AdrienEtienne/activin.svg?branch=master)](https://travis-ci.org/AdrienEtienne/activin)
 
+[![Coverage Status](https://coveralls.io/repos/github/AdrienEtienne/activin/badge.svg?branch=master)](https://coveralls.io/github/AdrienEtienne/activin?branch=master)
+
 # ActivIn
 
 Provide a way to find partners for sport sessions.
