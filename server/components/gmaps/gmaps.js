@@ -1,23 +1,26 @@
 'use strict';
 
-import appConfig from '../../config/environment';
 import GooglePlaces from 'googleplaces';
 import Promise from 'bluebird';
 import Prediction from './prediction';
 import _ from 'lodash';
 
-var googlePlaces = null;
+var googlePlaces = new GooglePlaces('key', 'json');
 var currentKey = null;
 
 var gmaps = {
-	getGooglePlace: function () {
-		if (googlePlaces && currentKey === appConfig.googleApi.key) {
+	setApiKey: function (key) {
+		if (currentKey === key) {
 			return googlePlaces;
 		} else {
-			currentKey = appConfig.googleApi.key;
-			googlePlaces = new GooglePlaces(appConfig.googleApi.key, 'json');
+			currentKey = key;
+			googlePlaces = new GooglePlaces(currentKey, 'json');
 			return googlePlaces;
 		}
+	},
+
+	getGooglePlace: function () {
+		return googlePlaces;
 	},
 
 	getPredictions: function (input) {
@@ -25,15 +28,17 @@ var gmaps = {
 			var parameters = {
 				input: input || ''
 			};
-			gmaps.getGooglePlace().placeAutocomplete(parameters, function (err, response) {
+			googlePlaces.placeAutocomplete(parameters, function (err, response) {
 				if (err) {
-					reject(err);
+					return reject(err);
 				} else if (response.error_message) {
-					reject(new Error(response.error_message));
+					return reject(new Error(response.error_message));
 				} else {
-					resolve(_.map(response.predictions, function (result) {
-						return new Prediction(result.place_id, result.description);
-					}));
+					var result = [];
+					_.forEach(response.predictions, function (prediction) {
+						result.push(new Prediction(prediction.place_id, prediction.description));
+					});
+					resolve(result);
 				}
 			});
 		});
@@ -41,7 +46,7 @@ var gmaps = {
 
 	getDetails: function (placeid) {
 		return new Promise(function (resolve, reject) {
-			gmaps.getGooglePlace().placeDetailsRequest({
+			googlePlaces.placeDetailsRequest({
 				placeid: placeid
 			}, function (err, response) {
 				if (err) {

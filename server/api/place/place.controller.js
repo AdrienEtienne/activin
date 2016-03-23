@@ -14,7 +14,7 @@ import Place from './place.model';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       res.status(statusCode).json(entity);
     }
@@ -22,19 +22,17 @@ function respondWithResult(res, statusCode) {
 }
 
 function saveUpdates(updates) {
-  return function(entity) {
-    if (entity) {
-      var updated = _.merge(entity, updates);
-      return updated.saveAsync()
-        .spread(updated => {
-          return updated;
-        });
-    }
+  return function (entity) {
+    var updated = _.merge(entity, updates);
+    return updated.saveAsync()
+      .spread(updated => {
+        return updated;
+      });
   };
 }
 
 function hideEntity(res) {
-  return function(entity) {
+  return function (entity) {
     if (entity) {
       entity.hide = true;
       return entity.saveAsync()
@@ -46,7 +44,7 @@ function hideEntity(res) {
 }
 
 function handleEntityNotFound(res) {
-  return function(entity) {
+  return function (entity) {
     if (!entity) {
       res.status(404).end();
       return null;
@@ -57,7 +55,7 @@ function handleEntityNotFound(res) {
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }

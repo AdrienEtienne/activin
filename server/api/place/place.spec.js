@@ -7,20 +7,20 @@ import Place from './place.model';
 
 var newPlace;
 
-describe('Place API:', function() {
+describe('Place API:', function () {
   var user;
   var otherUser;
   var token;
   var otherToken;
 
   // Clear users before testing
-  before('Remove places', function() {
+  before('Remove places', function () {
     return Place.removeAsync();
   });
 
   // Clear users before testing
-  before('Add user', function() {
-    return User.removeAsync().then(function() {
+  before('Add user', function () {
+    return User.removeAsync().then(function () {
       user = new User({
         name: 'Fake User',
         email: 'test@example.com',
@@ -31,7 +31,7 @@ describe('Place API:', function() {
     });
   });
 
-  before('Add other user', function() {
+  before('Add other user', function () {
     otherUser = new User({
       name: 'Fake User2',
       email: 'test2@example.com',
@@ -41,7 +41,7 @@ describe('Place API:', function() {
     return otherUser.saveAsync();
   });
 
-  before('Get token', function(done) {
+  before('Get token', function (done) {
     request(app)
       .post('/auth/local')
       .send({
@@ -56,7 +56,7 @@ describe('Place API:', function() {
       });
   });
 
-  before('Get token other user', function(done) {
+  before('Get token other user', function (done) {
     request(app)
       .post('/auth/local')
       .send({
@@ -72,12 +72,71 @@ describe('Place API:', function() {
   });
 
   // Clear users after testing
-  after('Remove User', function() {
+  after('Remove User', function () {
     return User.removeAsync();
   });
 
-  describe('POST /api/places', function() {
-    before(function(done) {
+  describe('GET /api/places', function () {
+    var places;
+
+    beforeEach(function (done) {
+      request(app)
+        .get('/api/places')
+        .set('authorization', 'Bearer ' + token)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          places = res.body;
+          done();
+        });
+    });
+
+    it('should respond with JSON array', function () {
+      places.should.be.instanceOf(Array);
+    });
+
+    it('should respond zero element', function () {
+      places.should.have.length(0);
+    });
+
+    it('should respond one element', function (done) {
+      Place.createAsync({
+        user: user._id,
+        name: 'New Place',
+        location: [-95.56, 29.735]
+      }).then(function (place) {
+        request(app)
+          .get('/api/places')
+          .set('authorization', 'Bearer ' + token)
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            res.body.should.have.length(1);
+            place.remove(done);
+          });
+      })
+    });
+
+    it('should respond zero element when bad user', function (done) {
+      request(app)
+        .get('/api/places')
+        .set('authorization', 'Bearer ' + otherToken)
+        .end((err, res) => {
+          if (err) {
+            return done(err);
+          }
+          res.body.should.have.length(0);
+          done();
+        });
+    });
+  });
+
+  describe('POST /api/places', function () {
+    before(function (done) {
       request(app)
         .post('/api/places')
         .set('authorization', 'Bearer ' + token)
@@ -96,60 +155,20 @@ describe('Place API:', function() {
         });
     });
 
-    it('should respond with the newly created place', function() {
+    it('should respond with the newly created place', function () {
       newPlace.name.should.equal('New Place');
       newPlace.location.should.deep.equal([-95.56, 29.735]);
     });
 
-    it('should respond with the user reference', function() {
+    it('should respond with the user reference', function () {
       newPlace.user.should.equal(user._id.toString());
     });
   });
 
-  describe('GET /api/places', function() {
-    var places;
-
-    before(function(done) {
-      request(app)
-        .get('/api/places')
-        .set('authorization', 'Bearer ' + token)
-        .expect(200)
-        .expect('Content-Type', /json/)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-          places = res.body;
-          done();
-        });
-    });
-
-    it('should respond with JSON array', function() {
-      places.should.be.instanceOf(Array);
-    });
-
-    it('should respond one element', function() {
-      places.should.have.length(1);
-    });
-
-    it('should respond zero element when bad user', function(done) {
-      request(app)
-        .get('/api/places')
-        .set('authorization', 'Bearer ' + otherToken)
-        .end((err, res) => {
-          if (err) {
-            return done(err);
-          }
-          res.body.should.have.length(0);
-          done();
-        });
-    });
-  });
-
-  describe('GET /api/places/:id', function() {
+  describe('GET /api/places/:id', function () {
     var place;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       request(app)
         .get('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
@@ -164,20 +183,32 @@ describe('Place API:', function() {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
       place = {};
     });
 
-    it('should respond with the requested place', function() {
+    it('should respond with the requested place', function () {
       place.name.should.equal('New Place');
       place.location.should.deep.equal([-95.56, 29.735]);
     });
+
+    it('should respond no element', function (done) {
+      request(app)
+        .get('/api/places/' + user._id)
+        .set('authorization', 'Bearer ' + token)
+        .expect(200)
+        .expect('Content-Type', /json/)
+        .end((err, res) => {
+          res.body.should.be.empty;
+          done();
+        });
+    });
   });
 
-  describe('PUT /api/places/:id', function() {
+  describe('PUT /api/places/:id', function () {
     var updatedPlace;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       request(app)
         .put('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
@@ -187,7 +218,7 @@ describe('Place API:', function() {
         })
         .expect(200)
         .expect('Content-Type', /json/)
-        .end(function(err, res) {
+        .end(function (err, res) {
           if (err) {
             return done(err);
           }
@@ -196,20 +227,33 @@ describe('Place API:', function() {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
       updatedPlace = {};
     });
 
-    it('should respond with the updated place', function() {
+    it('should respond with the updated place', function () {
       updatedPlace.name.should.equal('Updated Place');
       updatedPlace.location.should.deep.equal([1, 1]);
     });
 
+    it('should respond with 500 if no name', function (done) {
+      request(app)
+        .put('/api/places/' + newPlace._id)
+        .set('authorization', 'Bearer ' + token)
+        .send({
+          _id: newPlace._id,
+          name: null,
+          location: [1, 1]
+        })
+        .expect(500)
+        .end(done);
+    });
+
   });
 
-  describe('DELETE /api/places/:id', function() {
+  describe('DELETE /api/places/:id', function () {
 
-    it('should respond with 404 when place not to the user', function(done) {
+    it('should respond with 404 when place not to the user', function (done) {
       request(app)
         .delete('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + otherToken)
@@ -222,7 +266,7 @@ describe('Place API:', function() {
         });
     });
 
-    it('should respond with 204 on successful removal', function(done) {
+    it('should respond with 204 on successful removal', function (done) {
       request(app)
         .delete('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
@@ -235,7 +279,7 @@ describe('Place API:', function() {
         });
     });
 
-    it('should respond with 404 when place does not exist', function(done) {
+    it('should respond with 404 when place does not exist', function (done) {
       request(app)
         .delete('/api/places/' + newPlace._id)
         .set('authorization', 'Bearer ' + token)
@@ -248,15 +292,15 @@ describe('Place API:', function() {
         });
     });
 
-    it('should keep the place as hide', function(done) {
-      Place.findAsync().then(function(places) {
+    it('should keep the place as hide', function (done) {
+      Place.findAsync().then(function (places) {
         places.should.have.length(1);
         places[0].hide.should.equal(true);
         done();
       });
     });
 
-    it('should not return the deleted place', function(done) {
+    it('should not return the deleted place', function (done) {
       request(app)
         .get('/api/places')
         .set('authorization', 'Bearer ' + token)
