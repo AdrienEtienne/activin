@@ -32,11 +32,10 @@ function saveUpdates(updates) {
   };
 }
 
-function hideEntity(res) {
+function removeEntity(res) {
   return function (entity) {
     if (entity) {
-      entity.hide = true;
-      return entity.saveAsync()
+      return entity.removeAsync()
         .then(() => {
           res.status(204).end();
         });
@@ -64,8 +63,7 @@ function handleError(res, statusCode) {
 // Gets a list of Places
 export function index(req, res) {
   Place.findAsync({
-      user: req.user._id,
-      hide: false
+      user: req.user._id
     })
     .then(respondWithResult(res))
     .catch(handleError(res));
@@ -103,7 +101,10 @@ export function update(req, res) {
 
 // Deletes a Place from the DB
 export function destroy(req, res) {
-  Place.findByIdAsync(req.params.id)
+  Place.findOneAsync({
+      user: req.user._id,
+      _id: req.params.id
+    })
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
