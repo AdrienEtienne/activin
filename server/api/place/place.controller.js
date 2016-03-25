@@ -24,6 +24,7 @@ function respondWithResult(res, statusCode) {
 function saveUpdates(updates) {
   return function (entity) {
     var updated = _.merge(entity, updates);
+    updated.markModified('location');
     return updated.saveAsync()
       .spread(updated => {
         return updated;
@@ -102,12 +103,8 @@ export function update(req, res) {
 
 // Deletes a Place from the DB
 export function destroy(req, res) {
-  Place.findOneAsync({
-      user: req.user._id,
-      _id: req.params.id,
-      hide: false
-    })
+  Place.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
-    .then(hideEntity(res))
+    .then(removeEntity(res))
     .catch(handleError(res));
 }
