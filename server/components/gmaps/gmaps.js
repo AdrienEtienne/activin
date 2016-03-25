@@ -3,6 +3,7 @@
 import GooglePlaces from 'googleplaces';
 import Promise from 'bluebird';
 import Prediction from './prediction';
+import Details from './details';
 import _ from 'lodash';
 
 var googlePlaces = new GooglePlaces('key', 'json');
@@ -54,11 +55,10 @@ var gmaps = {
 				} else if (response.error_message) {
 					reject(new Error(response.error_message));
 				} else {
-					resolve({
-						placeid: placeid,
-						name: response.result.name,
-						location: response.result.geometry.location
-					});
+					var name = response.result.name;
+					var long = response.result.geometry.location.lng;
+					var lat = response.result.geometry.location.lat;
+					resolve(new Details(placeid, name, long, lat));
 				}
 			})
 		});
