@@ -249,6 +249,22 @@ describe('User API:', function () {
         done();
       });
     });
+
+    it('should return 204 with id only', function (done) {
+      request(app)
+        .put('/api/users/' + user._id + '/sports')
+        .set('authorization', 'Bearer ' + token)
+        .send([sports[0]._id])
+        .expect(204)
+        .end(done)
+    });
+
+    it('should add a sport', function (done) {
+      User.findByIdAsync(user._id).then(function (user) {
+        user.sports.should.have.length(1);
+        done();
+      });
+    });
   });
 
   describe('Location', function () {
