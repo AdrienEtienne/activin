@@ -86,7 +86,6 @@ UserSchema
 UserSchema
   .path('password')
   .validate(function (password) {
-    console.log('check password', password)
     if (authTypes.indexOf(this.provider) !== -1) {
       return true;
     }
