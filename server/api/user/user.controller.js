@@ -105,6 +105,24 @@ export function changePassword(req, res, next) {
 }
 
 /**
+ * Change a user's sports
+ */
+export function changeSports(req, res, next) {
+  var userId = req.user._id;
+  var sports = req.body;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      user.sports = sports;
+      return user.saveAsync()
+        .then(() => {
+          res.status(204).end();
+        })
+        .catch(validationError(res));
+    });
+}
+
+/**
  * Get my info
  */
 export function me(req, res, next) {

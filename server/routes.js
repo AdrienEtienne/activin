@@ -7,12 +7,11 @@
 import errors from './components/errors';
 import path from 'path';
 
-export default function(app) {
+export default function (app) {
   // Insert routes below
   app.use('/api/searchs', require('./api/search'));
   app.use('/api/applications', require('./api/application'));
   app.use('/api/places', require('./api/place'));
-  app.use('/api/mySports', require('./api/mySport'));
   app.use('/api/sports', require('./api/sport'));
   app.use('/api/users', require('./api/user'));
 

@@ -10,15 +10,23 @@ from 'mongoose';
 const authTypes = ['github', 'twitter', 'facebook', 'google'];
 
 var UserSchema = new Schema({
-  name: String,
+  name: {
+    type: String,
+    required: true
+  },
   email: {
     type: String,
+    required: true,
     lowercase: true
   },
   role: {
     type: String,
     default: 'user'
   },
+  sports: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Sport'
+  }],
   password: String,
   provider: String,
   salt: String,
@@ -78,6 +86,7 @@ UserSchema
 UserSchema
   .path('password')
   .validate(function (password) {
+    console.log('check password', password)
     if (authTypes.indexOf(this.provider) !== -1) {
       return true;
     }
@@ -120,12 +129,11 @@ UserSchema
     }
 
     // Handle new/update passwords
-    if (!this.isModified('password')) {
+    if (this.password && !this.isModified('password')) {
       return next();
     }
-
     if (!validatePresenceOf(this.password) && authTypes.indexOf(this.provider) === -1) {
-      next(new Error('Invalid password'));
+      return next(new Error('Invalid password'));
     }
 
     // Make salt with a callback
