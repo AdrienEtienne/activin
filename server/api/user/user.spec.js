@@ -139,6 +139,19 @@ describe('User API:', function () {
         .end(done);
     });
 
+    it('should return error if mail already taken', function (done) {
+      request(app)
+        .post('/api/users')
+        .send({
+          name: 'name',
+          email: 'test@example.com',
+          password: 'password'
+        })
+        .expect(422)
+        .expect('Content-Type', /json/)
+        .end(done);
+    });
+
     it('should return error if no password', function (done) {
       request(app)
         .post('/api/users')
@@ -169,7 +182,29 @@ describe('User API:', function () {
   });
 
   describe('PUT /api/users/:id/changePassword', function () {
-    var sports;
+    it('should return 403 if bad password', function (done) {
+      request(app)
+        .put('/api/users/' + user._id + '/password')
+        .set('authorization', 'Bearer ' + token)
+        .send({
+          newPassword: 'newPassword',
+          oldPassword: 'wrongpassword'
+        })
+        .expect(403)
+        .end(done)
+    });
+
+    it('should return 204', function (done) {
+      request(app)
+        .put('/api/users/' + user._id + '/password')
+        .set('authorization', 'Bearer ' + token)
+        .send({
+          newPassword: 'newPassword',
+          oldPassword: 'password'
+        })
+        .expect(204)
+        .end(done)
+    });
 
   });
 
