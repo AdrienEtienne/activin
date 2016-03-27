@@ -30,9 +30,12 @@ function handleError(res, statusCode) {
 
 // Gets a list of Places
 export function index(req, res) {
-  User.findAsync({
-      user: req.user._id
-    })
+  var userId = req.user._id;
+  var query = User.find();
+
+  query = query.where('_id').ne(userId);
+
+  query.execAsync()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
