@@ -88,7 +88,23 @@ describe('Search partners API:', function () {
     });
   });
 
-  it('should return an user with distance', function (done) {
+  it('should return an user with _id/name/role/distance/sports', function (done) {
+    request(app)
+      .post('/api/searchs/partners')
+      .set('authorization', 'Bearer ' + token)
+      .expect(200)
+      .expect('Content-Type', /json/)
+      .end((err, res) => {
+        res.body[0].should.have.property('_id')
+        res.body[0].should.have.property('name')
+        res.body[0].should.have.property('distance')
+        res.body[0].should.have.property('sports')
+        res.body[0].should.not.have.property('email')
+        done(err);
+      });
+  });
+
+  it('should return an user with good distance', function (done) {
     request(app)
       .post('/api/searchs/partners')
       .set('authorization', 'Bearer ' + token)

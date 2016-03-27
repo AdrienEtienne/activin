@@ -4,6 +4,7 @@ import GooglePlaces from 'googleplaces';
 import Promise from 'bluebird';
 import Prediction from './prediction';
 import Details from './details';
+import geolib from 'geolib';
 import _ from 'lodash';
 
 var googlePlaces = new GooglePlaces('key', 'json');
@@ -61,6 +62,16 @@ var gmaps = {
 					resolve(new Details(placeid, name, long, lat));
 				}
 			})
+		});
+	},
+
+	getDistance: function (lat1, long1, lat2, long2) {
+		return geolib.getDistance({
+			latitude: lat1,
+			longitude: long1
+		}, {
+			latitude: lat2,
+			longitude: long2
 		});
 	}
 };

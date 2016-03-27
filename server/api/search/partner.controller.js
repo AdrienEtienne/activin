@@ -11,6 +11,7 @@
 
 import _ from 'lodash';
 import User from '../user/user.model';
+import gmaps from '../../components/gmaps';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -26,10 +27,6 @@ function handleError(res, statusCode) {
   return function (err) {
     res.status(statusCode).send(err);
   };
-}
-
-function distance(long, lat, long, lat) {
-
 }
 
 // Gets a list of Places
@@ -65,8 +62,17 @@ export function index(req, res) {
     });
   }
 
-
   query.execAsync()
-    .then(respondWithResult(res))
+    .then(function (users) {
+      var results = _.map(users, function (user) {
+        return {
+          _id: user._id,
+          name: user.name,
+          sports: user.sports,
+          distance: gmaps.getDistance(location[1], location[0], user.location[1], user.location[0]) / 1000
+        }
+      });
+      respondWithResult(res)(results);
+    })
     .catch(handleError(res));
 }
