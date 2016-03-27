@@ -39,10 +39,11 @@ var UserSchema = new Schema({
   },
   location: {
     type: [Number],
-    index: '2d',
     default: []
   }
 });
+
+UserSchema.index({location: '2dsphere'});
 
 /**
  * Virtuals

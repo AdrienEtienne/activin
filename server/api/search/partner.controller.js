@@ -28,12 +28,43 @@ function handleError(res, statusCode) {
   };
 }
 
+function distance(long, lat, long, lat) {
+
+}
+
 // Gets a list of Places
 export function index(req, res) {
   var userId = req.user._id;
+  var sports = req.user.sports || [];
+  var location = req.user.location || [];
+
+  // km
+  var distance = req.body.distance || 2;
+
   var query = User.find();
 
+  if (sports.length === 0) {
+    return handleError(res, 405)({
+      message: 'No sports selected'
+    });
+  }
+
   query = query.where('_id').ne(userId);
+  query = query.where('sports').in(sports);
+
+  if (location) {
+    query = query.where('location').near({
+      center: {
+        type: 'Point',
+        coordinates: location
+      },
+
+      // Converting meters to miles. Specifying spherical geometry (for globe)
+      maxDistance: distance * 1000,
+      spherical: true
+    });
+  }
+
 
   query.execAsync()
     .then(respondWithResult(res))
