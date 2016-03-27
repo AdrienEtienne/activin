@@ -7,6 +7,16 @@ var searchCtrlStub = {
   details: 'searchCtrl.details'
 };
 
+var partnerCtrlStub = {
+  index: 'partnerCtrl.index'
+};
+
+var authServiceStub = {
+  isAuthenticated() {
+    return 'authService.isAuthenticated';
+  }
+};
+
 var routerStub = {
   get: sinon.spy(),
   put: sinon.spy(),
@@ -22,7 +32,9 @@ var searchIndex = proxyquire('./index.js', {
       return routerStub;
     }
   },
-  './search.controller': searchCtrlStub
+  './search.controller': searchCtrlStub,
+  './partner.controller': partnerCtrlStub,
+  '../../auth/auth.service': authServiceStub
 });
 
 describe('Search API Router:', function () {
@@ -46,6 +58,16 @@ describe('Search API Router:', function () {
     it('should route to search.controller.details', function () {
       routerStub.get
         .withArgs('/details', 'searchCtrl.details')
+        .should.have.been.calledOnce;
+    });
+
+  });
+
+  describe('POST /api/searchs/partners', function () {
+
+    it('should route to partner.controller.index', function () {
+      routerStub.post
+        .withArgs('/partners', 'authService.isAuthenticated', 'partnerCtrl.index')
         .should.have.been.calledOnce;
     });
 

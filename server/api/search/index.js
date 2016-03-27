@@ -1,11 +1,14 @@
 'use strict';
 
 var express = require('express');
-var controller = require('./search.controller');
+import * as auth from '../../auth/auth.service';
+import * as searchController from './search.controller';
+import * as partnerController from './partner.controller';
 
 var router = express.Router();
 
-router.get('/predictions', controller.predictions);
-router.get('/details', controller.details);
+router.get('/predictions', searchController.predictions);
+router.get('/details', searchController.details);
+router.post('/partners', auth.isAuthenticated(), partnerController.index);
 
 module.exports = router;

@@ -16,6 +16,7 @@
     "express-jwt": "^3.0.0",
     "express-session": "^1.11.3",
     "express-validator": "^2.20.2",
+    "geolib": "^2.0.20",
     "googleplaces": "^0.6.0",
     "gridfs-stream": "^1.1.1",
     "jsonwebtoken": "^5.0.0",
