@@ -1,11 +1,13 @@
 'use strict';
 
 var express = require('express');
-var controller = require('./search.controller');
+var searchController = require('./search.controller');
+var partnerController = require('./partner.controller');
 
 var router = express.Router();
 
-router.get('/predictions', controller.predictions);
-router.get('/details', controller.details);
+router.get('/predictions', searchController.predictions);
+router.get('/details', searchController.details);
+router.post('/partners', partnerController.index);
 
 module.exports = router;
