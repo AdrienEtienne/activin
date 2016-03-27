@@ -12,7 +12,7 @@ User.find({}).removeAsync()
         provider: 'local',
         name: 'Test User',
         email: 'test@example.com',
-        password: 'test'
+        password: 'tester'
       }, {
         provider: 'local',
         role: 'admin',
