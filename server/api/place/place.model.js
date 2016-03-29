@@ -7,11 +7,6 @@ var PlaceSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  hide: {
-    default: false,
-    type: Boolean,
-    required: true
-  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

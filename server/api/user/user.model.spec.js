@@ -3,7 +3,7 @@
 import app from '../..';
 import User from './user.model';
 var user;
-var genUser = function() {
+var genUser = function () {
   user = new User({
     provider: 'local',
     name: 'Fake User',
@@ -13,57 +13,71 @@ var genUser = function() {
   return user;
 };
 
-describe('User Model', function() {
-  before(function() {
+describe('User Model', function () {
+  before(function () {
     // Clear users before testing
     return User.removeAsync();
   });
 
-  beforeEach(function() {
+  beforeEach(function () {
     genUser();
   });
 
-  afterEach(function() {
+  afterEach(function () {
     return User.removeAsync();
   });
 
-  it('should begin with no users', function() {
+  it('profile should return the name and the role', function () {
+    user.profile.should.deep.equal({
+      'name': user.name,
+      'role': user.role
+    });
+  });
+
+  it('tokent should return the id and the role', function () {
+    user.token.should.deep.equal({
+      '_id': user._id,
+      'role': user.role
+    });
+  });
+
+  it('should begin with no users', function () {
     return User.findAsync({}).should
       .eventually.have.length(0);
   });
 
-  it('should fail when saving a duplicate user', function() {
+  it('should fail when saving a duplicate user', function () {
     return user.saveAsync()
-      .then(function() {
+      .then(function () {
         var userDup = genUser();
         return userDup.saveAsync();
       }).should.be.rejected;
   });
 
-  describe('#email', function() {
-    it('should fail when saving without an email', function() {
+  describe('#email', function () {
+    it('should fail when saving without an email', function () {
       user.email = '';
       return user.saveAsync().should.be.rejected;
     });
   });
 
-  describe('#password', function() {
-    beforeEach(function() {
+  describe('#password', function () {
+    beforeEach(function () {
       return user.saveAsync();
     });
 
-    it('should authenticate user if valid', function() {
+    it('should authenticate user if valid', function () {
       user.authenticate('password').should.be.true;
     });
 
-    it('should not authenticate user if invalid', function() {
+    it('should not authenticate user if invalid', function () {
       user.authenticate('blah').should.not.be.true;
     });
 
-    it('should remain the same hash unless the password is updated', function() {
+    it('should remain the same hash unless the password is updated', function () {
       user.name = 'Test User';
       return user.saveAsync()
-        .spread(function(u) {
+        .spread(function (u) {
           return u.authenticate('password');
         }).should.eventually.be.true;
     });

@@ -82,4 +82,12 @@ describe('Components: Gmaps', function () {
 			});
 		});
 	});
+
+	describe('getDistance(lat1, long1, lat2, long2)', function () {
+		it('should return place details', function () {
+			gmaps.getDistance(0, 0, 0.01, 0).should
+				.be.above(1100)
+				.and.be.below(1200);
+		});
+	});
 });

@@ -8,14 +8,14 @@ import _ from 'lodash';
 
 function validationError(res, statusCode) {
   statusCode = statusCode || 422;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).json(err);
   }
 }
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }
@@ -40,7 +40,7 @@ export function create(req, res, next) {
   newUser.provider = 'local';
   newUser.role = 'user';
   newUser.saveAsync()
-    .spread(function(user) {
+    .spread(function (user) {
       var token = jwt.sign({
         _id: user._id
       }, config.secrets.session, {
@@ -75,7 +75,7 @@ export function show(req, res, next) {
  */
 export function destroy(req, res) {
   User.findByIdAndRemoveAsync(req.params.id)
-    .then(function() {
+    .then(function () {
       res.status(204).end();
     })
     .catch(handleError(res));
@@ -101,6 +101,24 @@ export function changePassword(req, res, next) {
       } else {
         return res.status(403).end();
       }
+    });
+}
+
+/**
+ * Change a user's sports
+ */
+export function changeSports(req, res, next) {
+  var userId = req.user._id;
+  var sports = req.body;
+
+  User.findByIdAsync(userId)
+    .then(user => {
+      user.sports = sports;
+      return user.saveAsync()
+        .then(() => {
+          res.status(204).end();
+        })
+        .catch(validationError(res));
     });
 }
 
@@ -141,6 +159,7 @@ export function setLocation(req, res, next) {
     .then(user => {
       user.keepLocation = keepLocation;
       user.location = location;
+      user.markModified('location');
       return user.saveAsync().then(() => {
           res.status(204).end();
         })

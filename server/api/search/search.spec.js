@@ -2,6 +2,8 @@
 
 var app = require('../..');
 import request from 'supertest';
+import User from '../user/user.model';
+import Sport from '../sport/sport.model';
 
 var newSearch;
 

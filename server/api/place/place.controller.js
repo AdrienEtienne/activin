@@ -24,6 +24,7 @@ function respondWithResult(res, statusCode) {
 function saveUpdates(updates) {
   return function (entity) {
     var updated = _.merge(entity, updates);
+    updated.markModified('location');
     return updated.saveAsync()
       .spread(updated => {
         return updated;
@@ -31,11 +32,10 @@ function saveUpdates(updates) {
   };
 }
 
-function hideEntity(res) {
+function removeEntity(res) {
   return function (entity) {
     if (entity) {
-      entity.hide = true;
-      return entity.saveAsync()
+      return entity.removeAsync()
         .then(() => {
           res.status(204).end();
         });
@@ -63,8 +63,7 @@ function handleError(res, statusCode) {
 // Gets a list of Places
 export function index(req, res) {
   Place.findAsync({
-      user: req.user._id,
-      hide: false
+      user: req.user._id
     })
     .then(respondWithResult(res))
     .catch(handleError(res));
@@ -104,10 +103,9 @@ export function update(req, res) {
 export function destroy(req, res) {
   Place.findOneAsync({
       user: req.user._id,
-      _id: req.params.id,
-      hide: false
+      _id: req.params.id
     })
     .then(handleEntityNotFound(res))
-    .then(hideEntity(res))
+    .then(removeEntity(res))
     .catch(handleError(res));
 }
