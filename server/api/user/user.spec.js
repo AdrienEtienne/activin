@@ -152,18 +152,6 @@ describe('User API:', function () {
         .end(done);
     });
 
-    it('should return error if no password', function (done) {
-      request(app)
-        .post('/api/users')
-        .send({
-          name: 'name',
-          email: 'mail@mail.com'
-        })
-        .expect(422)
-        .expect('Content-Type', /json/)
-        .end(done);
-    });
-
     it('should create an user', function (done) {
       request(app)
         .post('/api/users')

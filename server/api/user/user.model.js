@@ -16,7 +16,6 @@ var UserSchema = new Schema({
   },
   email: {
     type: String,
-    required: true,
     lowercase: true
   },
   role: {
@@ -28,11 +27,19 @@ var UserSchema = new Schema({
     ref: 'Sport'
   }],
   password: String,
-  provider: String,
+  provider: {
+    type: String,
+    default: 'local'
+  },
   salt: String,
   facebook: {},
-  google: {},
-  github: {},
+  google: {
+    id: String,
+    accessToken: String,
+    refreshToken: String,
+    email: String,
+    name: String
+  },
   keepLocation: {
     type: Boolean,
     default: true
@@ -43,7 +50,9 @@ var UserSchema = new Schema({
   }
 });
 
-UserSchema.index({location: '2dsphere'});
+UserSchema.index({
+  location: '2dsphere'
+});
 
 /**
  * Virtuals
@@ -129,27 +138,30 @@ UserSchema
     }
 
     // Handle new/update passwords
-    if (this.password && !this.isModified('password')) {
+    if (!this.isModified('password')) {
       return next();
-    }
-    if (!validatePresenceOf(this.password) && authTypes.indexOf(this.provider) === -1) {
-      return next(new Error('Invalid password'));
-    }
-
-    // Make salt with a callback
-    this.makeSalt((saltErr, salt) => {
-      if (saltErr) {
-        next(saltErr);
-      }
-      this.salt = salt;
-      this.encryptPassword(this.password, (encryptErr, hashedPassword) => {
-        if (encryptErr) {
-          next(encryptErr);
+    } else if (!validatePresenceOf(this.password) && authTypes.indexOf(this.provider) === -1) {
+      next(new Error('Invalid password'));
+    } else if (!validatePresenceOf(this.email) && authTypes.indexOf(this.provider) === -1) {
+      next(new Error('Invalid email'));
+    } else {
+      // Make salt with a callback
+      this.makeSalt((saltErr, salt) => {
+        if (saltErr) {
+          next(saltErr);
+        } else {
+          this.salt = salt;
+          this.encryptPassword(this.password, (encryptErr, hashedPassword) => {
+            if (encryptErr) {
+              next(encryptErr);
+            }
+            this.password = hashedPassword;
+            next();
+          });
         }
-        this.password = hashedPassword;
-        next();
+
       });
-    });
+    }
   });
 
 /**

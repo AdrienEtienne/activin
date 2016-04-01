@@ -59,10 +59,30 @@ describe('User Model', function () {
       user.email = '';
       return user.saveAsync().should.be.rejected;
     });
+
+    it('should pass when saving without an email and provider != local', function () {
+      user.email = '';
+      user.provider = 'google';
+      return user.saveAsync();
+    });
   });
 
   describe('#password', function () {
     beforeEach(function () {
+      return user.saveAsync();
+    });
+
+    it('should return error if password empty', function () {
+      user.password = undefined;
+      return user.saveAsync().should.be.rejected;
+    });
+
+    it('should save user if no password and provider != local', function () {
+      user = new User({
+        provider: 'google',
+        name: 'Fake User',
+        email: 'toto@example.com',
+      })
       return user.saveAsync();
     });
 
