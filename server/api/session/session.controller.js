@@ -61,9 +61,21 @@ function handleError(res, statusCode) {
 
 // Gets a list of Sessions
 export function index(req, res) {
-  Session.findAsync({
-      createdBy: req.user._id
-    })
+  var next = req.query.next === 'true' ? true : false;
+
+  var query = Session.find({
+    createdBy: req.user._id
+  });
+
+  if (next) {
+    query = query.where({
+      "dateStart": {
+        "$gte": new Date()
+      }
+    });
+  }
+
+  query.execAsync()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }

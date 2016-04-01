@@ -4,6 +4,7 @@ var app = require('../..');
 import request from 'supertest';
 import User from '../user/user.model';
 import Sport from '../sport/sport.model';
+import Session from './session.model';
 
 var newSession;
 
@@ -72,6 +73,56 @@ describe('Session API:', function () {
 
     it('should respond with JSON array', function () {
       sessions.should.be.instanceOf(Array);
+    });
+
+    describe('?next=true', function () {
+      var sessionNext, sessionPrevious;
+      before(function (done) {
+        request(app)
+          .post('/api/sessions')
+          .set('authorization', 'Bearer ' + token)
+          .send({
+            name: 'New Session',
+            sport: sports[0],
+            dateStart: new Date(new Date().getTime() + 60000)
+          })
+          .end((err, res) => {
+            sessionNext = res.body;
+            done(err);
+          });
+      });
+
+      before(function (done) {
+        request(app)
+          .post('/api/sessions')
+          .set('authorization', 'Bearer ' + token)
+          .send({
+            name: 'New Session',
+            sport: sports[0],
+            dateStart: new Date(new Date().getTime() - 60000)
+          })
+          .end((err, res) => {
+            sessionPrevious = res.body;
+            done(err);
+          });
+      });
+
+      after('Remove Sessions', function () {
+        return Session.removeAsync();
+      });
+
+      it('should respond only one element', function (done) {
+        request(app)
+          .get('/api/sessions?next=true')
+          .set('authorization', 'Bearer ' + token)
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .end((err, res) => {
+            res.body.should.have.length(1);
+            res.body[0]._id.should.equal(sessionNext._id);
+            done(err);
+          });
+      });
     });
   });
 
