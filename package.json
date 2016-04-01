@@ -1,6 +1,6 @@
 {
     "name": "activin",
-    "version": "1.0.0-alpha.7",
+    "version": "1.0.0-alpha.8",
     "main": "server/app.js",
     "dependencies": {
         "babel-runtime": "^5.8.20",
