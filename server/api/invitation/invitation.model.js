@@ -3,11 +3,6 @@
 var mongoose = require('bluebird').promisifyAll(require('mongoose'));
 
 var InvitationSchema = new mongoose.Schema({
-	session: {
-		type: mongoose.Schema.Types.ObjectId,
-		ref: 'Session',
-		required: true
-	},
 	userInvited: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: 'User',
@@ -19,9 +14,22 @@ var InvitationSchema = new mongoose.Schema({
 		required: true
 	},
 	state: {
-		type: Number
+		type: Number,
 		default: 0
 	}
 });
+
+/**
+ * Methods
+ */
+InvitationSchema.methods = {
+	setAccepted() {
+			this.state = 1;
+		},
+
+		setRefused() {
+			this.state = 2;
+		}
+};
 
 export default mongoose.model('Invitation', InvitationSchema);

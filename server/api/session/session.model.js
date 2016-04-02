@@ -1,6 +1,8 @@
 'use strict';
 
 var mongoose = require('bluebird').promisifyAll(require('mongoose'));
+import Invitation from '../invitation/invitation.model';
+var InvitationSchema = Invitation.schema
 
 var SessionSchema = new mongoose.Schema({
 	name: {
@@ -23,7 +25,8 @@ var SessionSchema = new mongoose.Schema({
 	},
 	dateStop: {
 		type: Date
-	}
+	},
+	invitations: [InvitationSchema]
 });
 
 export default mongoose.model('Session', SessionSchema);

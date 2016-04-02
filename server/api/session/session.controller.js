@@ -62,10 +62,21 @@ function handleError(res, statusCode) {
 // Gets a list of Sessions
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
+  var scope = null;
+
+  if (req.query.scope && req.query.scope === 'id') {
+    scope = '_id';
+  } else if (req.query.scope && req.query.scope === 'invitation') {
+    scope = '-invitations.userInvited -invitations.byUser';
+  }
 
   var query = Session.find({
     createdBy: req.user._id
   });
+
+  if (scope) {
+    query = query.select(scope);
+  }
 
   if (next) {
     query = query.where({

@@ -5,12 +5,12 @@ import request from 'supertest';
 
 var newInvitation;
 
-describe('Invitation API:', function() {
+describe('Invitation API:', function () {
 
-  describe('GET /api/invitations', function() {
+  describe('GET /api/invitations', function () {
     var invitations;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       request(app)
         .get('/api/invitations')
         .expect(200)
@@ -24,14 +24,35 @@ describe('Invitation API:', function() {
         });
     });
 
-    it('should respond with JSON array', function() {
+    it('should respond with JSON array', function () {
       invitations.should.be.instanceOf(Array);
+    });
+
+    describe('query', function () {
+      describe('=invitation', function () {
+        beforeEach(function () {
+          session.invitations = [invitation];
+          return session.saveAsync();
+        });
+
+        it('should respond only element id only', function (done) {
+          request(app)
+            .get('/api/sessions?scope=invitation')
+            .set('authorization', 'Bearer ' + token)
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+              res.body[0].invitations[0]._id.should.equal(invitation._id.toString());
+              done(err);
+            });
+        });
+      });
     });
 
   });
 
-  describe('POST /api/invitations', function() {
-    beforeEach(function(done) {
+  describe('POST /api/invitations', function () {
+    beforeEach(function (done) {
       request(app)
         .post('/api/invitations')
         .send({
@@ -49,17 +70,17 @@ describe('Invitation API:', function() {
         });
     });
 
-    it('should respond with the newly created invitation', function() {
+    it('should respond with the newly created invitation', function () {
       newInvitation.name.should.equal('New Invitation');
       newInvitation.info.should.equal('This is the brand new invitation!!!');
     });
 
   });
 
-  describe('GET /api/invitations/:id', function() {
+  describe('GET /api/invitations/:id', function () {
     var invitation;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       request(app)
         .get('/api/invitations/' + newInvitation._id)
         .expect(200)
@@ -73,21 +94,21 @@ describe('Invitation API:', function() {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
       invitation = {};
     });
 
-    it('should respond with the requested invitation', function() {
+    it('should respond with the requested invitation', function () {
       invitation.name.should.equal('New Invitation');
       invitation.info.should.equal('This is the brand new invitation!!!');
     });
 
   });
 
-  describe('PUT /api/invitations/:id', function() {
+  describe('PUT /api/invitations/:id', function () {
     var updatedInvitation;
 
-    beforeEach(function(done) {
+    beforeEach(function (done) {
       request(app)
         .put('/api/invitations/' + newInvitation._id)
         .send({
@@ -96,7 +117,7 @@ describe('Invitation API:', function() {
         })
         .expect(200)
         .expect('Content-Type', /json/)
-        .end(function(err, res) {
+        .end(function (err, res) {
           if (err) {
             return done(err);
           }
@@ -105,20 +126,20 @@ describe('Invitation API:', function() {
         });
     });
 
-    afterEach(function() {
+    afterEach(function () {
       updatedInvitation = {};
     });
 
-    it('should respond with the updated invitation', function() {
+    it('should respond with the updated invitation', function () {
       updatedInvitation.name.should.equal('Updated Invitation');
       updatedInvitation.info.should.equal('This is the updated invitation!!!');
     });
 
   });
 
-  describe('DELETE /api/invitations/:id', function() {
+  describe('DELETE /api/invitations/:id', function () {
 
-    it('should respond with 204 on successful removal', function(done) {
+    it('should respond with 204 on successful removal', function (done) {
       request(app)
         .delete('/api/invitations/' + newInvitation._id)
         .expect(204)
@@ -130,7 +151,7 @@ describe('Invitation API:', function() {
         });
     });
 
-    it('should respond with 404 when invitation does not exist', function(done) {
+    it('should respond with 404 when invitation does not exist', function (done) {
       request(app)
         .delete('/api/invitations/' + newInvitation._id)
         .expect(404)

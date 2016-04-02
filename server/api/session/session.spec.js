@@ -5,6 +5,7 @@ import request from 'supertest';
 import User from '../user/user.model';
 import Sport from '../sport/sport.model';
 import Session from './session.model';
+import Invitation from '../invitation/invitation.model';
 
 var newSession;
 
@@ -12,6 +13,27 @@ describe('Session API:', function () {
   var user;
   var token;
   var sports;
+
+  var session;
+  var genSession = function (data) {
+    var doc = data || {
+      createdBy: user,
+      name: 'New Session',
+      sport: sports[0],
+      dateStart: new Date(new Date().getTime() + 60000)
+    }
+    session = new Session(doc);
+    return session;
+  };
+
+  var invitation;
+  var genInvitation = function () {
+    invitation = new Invitation({
+      userInvited: user,
+      byUser: user
+    });
+    return invitation;
+  };
 
   // Get sports
   before(function () {
@@ -75,53 +97,72 @@ describe('Session API:', function () {
       sessions.should.be.instanceOf(Array);
     });
 
-    describe('?next=true', function () {
-      var sessionNext, sessionPrevious;
-      before(function (done) {
-        request(app)
-          .post('/api/sessions')
-          .set('authorization', 'Bearer ' + token)
-          .send({
-            name: 'New Session',
-            sport: sports[0],
-            dateStart: new Date(new Date().getTime() + 60000)
-          })
-          .end((err, res) => {
-            sessionNext = res.body;
-            done(err);
-          });
+    describe('query', function () {
+      beforeEach(function () {
+        genSession();
+        genInvitation();
       });
 
-      before(function (done) {
-        request(app)
-          .post('/api/sessions')
-          .set('authorization', 'Bearer ' + token)
-          .send({
-            name: 'New Session',
-            sport: sports[0],
-            dateStart: new Date(new Date().getTime() - 60000)
-          })
-          .end((err, res) => {
-            sessionPrevious = res.body;
-            done(err);
-          });
-      });
-
-      after('Remove Sessions', function () {
+      afterEach('Remove Sessions', function () {
         return Session.removeAsync();
       });
 
-      it('should respond only one element', function (done) {
-        request(app)
-          .get('/api/sessions?next=true')
-          .set('authorization', 'Bearer ' + token)
-          .expect(200)
-          .expect('Content-Type', /json/)
-          .end((err, res) => {
-            res.body.should.have.length(1);
-            res.body[0]._id.should.equal(sessionNext._id);
-            done(err);
+      describe('?next=true', function () {
+        beforeEach(function () {
+          return session.saveAsync();
+        });
+
+        it('should respond only one element', function (done) {
+          request(app)
+            .get('/api/sessions?next=true')
+            .set('authorization', 'Bearer ' + token)
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+              res.body.should.have.length(1);
+              res.body[0]._id.should.equal(session._id.toString());
+              done(err);
+            });
+        });
+      });
+
+      describe('scope', function () {
+        describe('=id', function () {
+          beforeEach(function () {
+            return session.saveAsync();
           });
+
+          it('should respond only element id only', function (done) {
+            request(app)
+              .get('/api/sessions?scope=id')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body[0].should.have.property('_id');
+                done(err);
+              });
+          });
+        });
+
+        describe('=invitation', function () {
+          beforeEach(function () {
+            session.invitations = [invitation];
+            return session.saveAsync();
+          });
+
+          it('should respond only element id only', function (done) {
+            request(app)
+              .get('/api/sessions?scope=invitation')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body[0].invitations[0]._id.should.equal(invitation._id.toString());
+                done(err);
+              });
+          });
+        });
       });
     });
   });

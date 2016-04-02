@@ -43,7 +43,9 @@ var UserSchema = new Schema({
   }
 });
 
-UserSchema.index({location: '2dsphere'});
+UserSchema.index({
+  location: '2dsphere'
+});
 
 /**
  * Virtuals

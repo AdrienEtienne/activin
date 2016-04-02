@@ -34,7 +34,7 @@ describe('User Model', function () {
     });
   });
 
-  it('tokent should return the id and the role', function () {
+  it('token should return the id and the role', function () {
     user.token.should.deep.equal({
       '_id': user._id,
       'role': user.role
