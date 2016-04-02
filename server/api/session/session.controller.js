@@ -11,6 +11,7 @@
 
 import _ from 'lodash';
 import Session from './session.model';
+import Invitation from './invitation.model';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -86,6 +87,15 @@ export function index(req, res) {
     });
   }
 
+  if (req.query.filter) {
+    var invitationStates = Invitation.filterState(req.query.filter);
+    query = query.where({
+      'invitations.state': {
+        '$in': invitationStates
+      }
+    });
+  }
+
   query.execAsync()
     .then(respondWithResult(res))
     .catch(handleError(res));
@@ -101,9 +111,18 @@ export function show(req, res) {
 
 // Creates a new Session in the DB
 export function create(req, res) {
-  Session.createAsync(_.merge(req.body, {
-      createdBy: req.user._id
-    }))
+  var userId = req.user._id;
+  var body = req.body;
+
+  body.createdBy = userId;
+  var invitation = new Invitation({
+    userInvited: userId,
+    byUser: userId
+  });
+  invitation.setAccepted();
+  body.invitations = [invitation];
+
+  Session.createAsync(body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }

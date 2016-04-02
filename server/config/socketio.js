@@ -16,7 +16,6 @@ function onConnect(socket) {
   });
 
   // Insert sockets below
-  require('../api/invitation/invitation.socket').register(socket);
 
 }
 

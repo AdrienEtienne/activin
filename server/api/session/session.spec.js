@@ -5,7 +5,7 @@ import request from 'supertest';
 import User from '../user/user.model';
 import Sport from '../sport/sport.model';
 import Session from './session.model';
-import Invitation from '../invitation/invitation.model';
+import Invitation from './invitation.model';
 
 var newSession;
 
@@ -127,7 +127,7 @@ describe('Session API:', function () {
       });
 
       describe('scope', function () {
-        describe('=id', function () {
+        describe('?id', function () {
           beforeEach(function () {
             return session.saveAsync();
           });
@@ -145,7 +145,7 @@ describe('Session API:', function () {
           });
         });
 
-        describe('=invitation', function () {
+        describe('?invitation', function () {
           beforeEach(function () {
             session.invitations = [invitation];
             return session.saveAsync();
@@ -161,6 +161,103 @@ describe('Session API:', function () {
                 res.body[0].invitations[0]._id.should.equal(invitation._id.toString());
                 done(err);
               });
+          });
+        });
+
+        describe('?filter', function () {
+          beforeEach(function () {
+            session.invitations = [invitation];
+            return session.saveAsync();
+          });
+
+          describe('=unknown', function () {
+            it('should respond one element', function (done) {
+              request(app)
+                .get('/api/sessions?filter=unknown')
+                .set('authorization', 'Bearer ' + token)
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                  res.body.should.have.length(1);
+                  done(err);
+                });
+            });
+
+            it('should respond zero element', function (done) {
+              invitation.setAccepted();
+              session.invitations = [invitation];
+              session.saveAsync().then(function (result) {
+                request(app)
+                  .get('/api/sessions?filter=unknown')
+                  .set('authorization', 'Bearer ' + token)
+                  .expect(200)
+                  .expect('Content-Type', /json/)
+                  .end((err, res) => {
+                    res.body.should.have.length(0);
+                    done(err);
+                  });
+              });
+            });
+          });
+
+          describe('=accepted', function () {
+            it('should respond zero element', function (done) {
+              request(app)
+                .get('/api/sessions?filter=accepted')
+                .set('authorization', 'Bearer ' + token)
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                  res.body.should.have.length(0);
+                  done(err);
+                });
+            });
+
+            it('should respond one element', function (done) {
+              invitation.setAccepted();
+              session.invitations = [invitation];
+              session.saveAsync().then(function (result) {
+                request(app)
+                  .get('/api/sessions?filter=accepted')
+                  .set('authorization', 'Bearer ' + token)
+                  .expect(200)
+                  .expect('Content-Type', /json/)
+                  .end((err, res) => {
+                    res.body.should.have.length(1);
+                    done(err);
+                  });
+              });
+            });
+          });
+
+          describe('=refused', function () {
+            it('should respond zero element', function (done) {
+              request(app)
+                .get('/api/sessions?filter=refused')
+                .set('authorization', 'Bearer ' + token)
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                  res.body.should.have.length(0);
+                  done(err);
+                });
+            });
+
+            it('should respond one element', function (done) {
+              invitation.setRefused();
+              session.invitations = [invitation];
+              session.saveAsync().then(function (result) {
+                request(app)
+                  .get('/api/sessions?filter=refused')
+                  .set('authorization', 'Bearer ' + token)
+                  .expect(200)
+                  .expect('Content-Type', /json/)
+                  .end((err, res) => {
+                    res.body.should.have.length(1);
+                    done(err);
+                  });
+              });
+            });
           });
         });
       });
@@ -206,6 +303,13 @@ describe('Session API:', function () {
         .expect(500)
         .expect('Content-Type', /json/)
         .end(done);
+    });
+
+    it('should add invitation for creator', function () {
+      newSession.invitations.should.have.length(1);
+      newSession.invitations[0].should.have.property('state', 1);
+      newSession.invitations[0].should.have.property('userInvited', user._id.toString());
+      newSession.invitations[0].should.have.property('byUser', user._id.toString());
     });
   });
 

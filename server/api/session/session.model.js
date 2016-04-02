@@ -1,7 +1,7 @@
 'use strict';
 
 var mongoose = require('bluebird').promisifyAll(require('mongoose'));
-import Invitation from '../invitation/invitation.model';
+import Invitation from './invitation.model';
 var InvitationSchema = Invitation.schema
 
 var SessionSchema = new mongoose.Schema({

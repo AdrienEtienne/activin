@@ -66,4 +66,23 @@ describe('Invitation Model', function () {
       invitation.state.should.equal(2);
     });
   });
+
+  describe('filterState(states)', function () {
+    it('should return all states', function () {
+      Invitation.filterState().should.deep.equal([0, 1, 2]);
+      Invitation.filterState('').should.deep.equal([0, 1, 2]);
+      Invitation.filterState(null).should.deep.equal([0, 1, 2]);
+      Invitation.filterState(undefined).should.deep.equal([0, 1, 2]);
+    });
+
+    it('should return Unknown state', function () {
+      Invitation.filterState('unknown').should.deep.equal([0]);
+    });
+    it('should return Accepted state', function () {
+      Invitation.filterState('accepted').should.deep.equal([1]);
+    });
+    it('should return Refused state', function () {
+      Invitation.filterState('refused').should.deep.equal([2]);
+    });
+  });
 });
