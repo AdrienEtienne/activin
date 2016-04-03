@@ -82,6 +82,19 @@ function removeEntity(res) {
   };
 }
 
+function removeInvitation(res, invitationId) {
+  return function (entity) {
+    var removed = _.remove(entity.invitations, function (invitation) {
+      return invitation._id.toString() === invitationId;
+    });
+    entity.markModified('invitations');
+    return entity.saveAsync()
+      .then(() => {
+        res.status(204).end();
+      });
+  };
+}
+
 function handleEntityNotFound(res) {
   return function (entity) {
     if (!entity) {
@@ -200,9 +213,6 @@ export function update(req, res) {
 
 // Updates an existing Session in the DB
 export function updateInvitation(req, res) {
-  if (req.body._id) {
-    delete req.body._id;
-  }
   Session.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(saveUpdatesInvitation(req.params.invitationId, req.body))
@@ -222,6 +232,6 @@ export function destroy(req, res) {
 export function destroyInvitation(req, res) {
   Session.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
-    .then(removeEntity(res))
+    .then(removeInvitation(res, req.params.invitationId))
     .catch(handleError(res));
 }

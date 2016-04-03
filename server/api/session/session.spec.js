@@ -493,6 +493,36 @@ describe('Session API:', function () {
         });
     });
 
+    describe('/invitation/invitationId', function () {
+      beforeEach(function () {
+        genSession();
+        genInvitation();
+        session.invitations = [invitation];
+        return session.saveAsync();
+      });
+
+      it('should respond with 204 on successful removal', function (done) {
+        request(app)
+          .delete('/api/sessions/' + session._id + '/invitation/' + invitation._id)
+          .expect(204)
+          .end(done);
+      });
+
+      it('should remove the invitation', function (done) {
+        request(app)
+          .delete('/api/sessions/' + session._id + '/invitation/' + invitation._id)
+          .expect(204)
+          .end((err, res) => {
+            Session.findByIdAsync(session._id)
+              .then(function (session) {
+                session.invitations.should.have.length(0);
+                done(err);
+              });
+          });
+      });
+    });
   });
+
+
 
 });
