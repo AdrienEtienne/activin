@@ -12,8 +12,11 @@ var sessionCtrlStub = {
   index: 'sessionCtrl.index',
   show: 'sessionCtrl.show',
   create: 'sessionCtrl.create',
+  createInvitation: 'sessionCtrl.createInvitation',
   update: 'sessionCtrl.update',
-  destroy: 'sessionCtrl.destroy'
+  updateInvitation: 'sessionCtrl.updateInvitation',
+  destroy: 'sessionCtrl.destroy',
+  destroyInvitation: 'sessionCtrl.destroyInvitation'
 };
 
 var routerStub = {
@@ -68,7 +71,11 @@ describe('Session API Router:', function () {
         .withArgs('/', 'authService.isAuthenticated', 'sessionCtrl.create')
         .should.have.been.calledOnce;
     });
-
+    it('should route to session.controller.createInvitation', function () {
+      routerStub.post
+        .withArgs('/:id/invitation', 'authService.isAuthenticated', 'sessionCtrl.createInvitation')
+        .should.have.been.calledOnce;
+    });
   });
 
   describe('PUT /api/sessions/:id', function () {
@@ -78,7 +85,11 @@ describe('Session API Router:', function () {
         .withArgs('/:id', 'sessionCtrl.update')
         .should.have.been.calledOnce;
     });
-
+    it('should route to session.controller.updateInvitation', function () {
+      routerStub.put
+        .withArgs('/:id/invitation/:invitationId', 'sessionCtrl.updateInvitation')
+        .should.have.been.calledOnce;
+    });
   });
 
   describe('PATCH /api/sessions/:id', function () {
@@ -98,7 +109,11 @@ describe('Session API Router:', function () {
         .withArgs('/:id', 'sessionCtrl.destroy')
         .should.have.been.calledOnce;
     });
-
+    it('should route to session.controller.destroyInvitation', function () {
+      routerStub.delete
+        .withArgs('/:id/invitation/:invitationId', 'sessionCtrl.destroyInvitation')
+        .should.have.been.calledOnce;
+    });
   });
 
 });

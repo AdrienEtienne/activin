@@ -32,6 +32,45 @@ function saveUpdates(updates) {
   };
 }
 
+function saveUpdatesInvitation(invitationId, updates) {
+  return function (entity) {
+    _.map(entity.invitations, function (invit) {
+      if (invit._id.toString() === invitationId) {
+        _.merge(invit, updates);
+        entity.markModified('invitations');
+        return invit;
+      } else {
+        return invit;
+      }
+    });
+    return entity.saveAsync()
+      .spread(updated => {
+        return updated;
+      });
+  };
+}
+
+function addInvitation(invitation) {
+  var newInvitation = new Invitation(invitation);
+
+  return function (entity) {
+    var found = _.find(entity.invitations, function (invit) {
+      return invit.userInvited.toString() === newInvitation.userInvited.toString();
+    })
+
+    if (found) {
+      return null;
+    } else {
+      entity.invitations.push(newInvitation);
+      entity.markModified('invitations');
+      return entity.saveAsync()
+        .spread(updated => {
+          return updated;
+        });
+    }
+  };
+}
+
 function removeEntity(res) {
   return function (entity) {
     if (entity) {
@@ -47,6 +86,16 @@ function handleEntityNotFound(res) {
   return function (entity) {
     if (!entity) {
       res.status(404).end();
+      return null;
+    }
+    return entity;
+  };
+}
+
+function handleInvitationError(res) {
+  return function (entity) {
+    if (!entity) {
+      res.status(401).end();
       return null;
     }
     return entity;
@@ -127,6 +176,16 @@ export function create(req, res) {
     .catch(handleError(res));
 }
 
+// Creates a new Session in the DB
+export function createInvitation(req, res) {
+  Session.findByIdAsync(req.params.id)
+    .then(handleEntityNotFound(res))
+    .then(addInvitation(req.body))
+    .then(handleInvitationError(res))
+    .then(respondWithResult(res, 201))
+    .catch(handleError(res, 401));
+}
+
 // Updates an existing Session in the DB
 export function update(req, res) {
   if (req.body._id) {
@@ -139,8 +198,28 @@ export function update(req, res) {
     .catch(handleError(res));
 }
 
+// Updates an existing Session in the DB
+export function updateInvitation(req, res) {
+  if (req.body._id) {
+    delete req.body._id;
+  }
+  Session.findByIdAsync(req.params.id)
+    .then(handleEntityNotFound(res))
+    .then(saveUpdatesInvitation(req.params.invitationId, req.body))
+    .then(respondWithResult(res))
+    .catch(handleError(res));
+}
+
 // Deletes a Session from the DB
 export function destroy(req, res) {
+  Session.findByIdAsync(req.params.id)
+    .then(handleEntityNotFound(res))
+    .then(removeEntity(res))
+    .catch(handleError(res));
+}
+
+// Deletes a Session from the DB
+export function destroyInvitation(req, res) {
   Session.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))

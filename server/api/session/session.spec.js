@@ -35,6 +35,11 @@ describe('Session API:', function () {
     return invitation;
   };
 
+  // Clear users before testing
+  before('Remove Session', function () {
+    return Session.removeAsync();
+  });
+
   // Get sports
   before(function () {
     return Sport.findAsync().then(function (results) {
@@ -311,6 +316,50 @@ describe('Session API:', function () {
       newSession.invitations[0].should.have.property('userInvited', user._id.toString());
       newSession.invitations[0].should.have.property('byUser', user._id.toString());
     });
+
+    describe('/:id/invitation', function () {
+      var secondUser;
+
+      beforeEach(function () {
+        secondUser = new User({
+          name: 'Fake User',
+          email: 'test@example.com',
+          password: 'password'
+        });
+      });
+
+      beforeEach(function (done) {
+        request(app)
+          .post('/api/sessions/' + newSession._id + '/invitation')
+          .set('authorization', 'Bearer ' + token)
+          .send({
+            userInvited: secondUser._id,
+            byUser: user._id
+          })
+          .expect(201)
+          .expect('Content-Type', /json/)
+          .end((err, res) => {
+            newSession = res.body;
+            done(err);
+          });
+      });
+
+      it('should add an invitation', function () {
+        newSession.invitations.should.have.length(2);
+      });
+
+      it('should respond 401 if user already added', function (done) {
+        request(app)
+          .post('/api/sessions/' + newSession._id + '/invitation')
+          .set('authorization', 'Bearer ' + token)
+          .send({
+            userInvited: secondUser._id,
+            byUser: user._id
+          })
+          .expect(401)
+          .end(done);
+      });
+    });
   });
 
   describe('GET /api/sessions/:id', function () {
@@ -393,6 +442,27 @@ describe('Session API:', function () {
           updatedSession.name.should.equal('Updated Session2');
           done();
         });
+    });
+
+
+    describe('/invitation/:invitationId', function () {
+      beforeEach(function (done) {
+        request(app)
+          .put('/api/sessions/' + newSession._id + '/invitation/' + updatedSession.invitations[0]._id)
+          .send({
+            state: 2
+          })
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .end(function (err, res) {
+            updatedSession = res.body;
+            done();
+          });
+      });
+
+      it('should respond with the updated session', function () {
+        updatedSession.invitations[0].state.should.equal(2);
+      });
     });
 
   });
