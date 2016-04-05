@@ -13,7 +13,7 @@ describe('User API:', function () {
     return User.removeAsync().then(function () {
       user = new User({
         name: 'Fake User',
-        email: 'test@example.com',
+        email: 'fake@example.com',
         password: 'password',
         role: 'admin'
       });
@@ -33,7 +33,7 @@ describe('User API:', function () {
     request(app)
       .post('/auth/local')
       .send({
-        email: 'test@example.com',
+        email: 'fake@example.com',
         password: 'password'
       })
       .expect(200)
@@ -144,7 +144,7 @@ describe('User API:', function () {
         .post('/api/users')
         .send({
           name: 'name',
-          email: 'test@example.com',
+          email: 'fake@example.com',
           password: 'password'
         })
         .expect(422)
@@ -217,7 +217,7 @@ describe('User API:', function () {
 
     it('should add a sport', function (done) {
       User.findByIdAsync(user._id).then(function (user) {
-        user.sports.should.have.length(1);
+        user.sports.should.have.length(sports.length);
         done();
       });
     });

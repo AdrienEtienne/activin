@@ -4,26 +4,26 @@ var app = require('../..');
 import request from 'supertest';
 import User from '../user/user.model';
 import Sport from '../sport/sport.model';
-import Session from './session.model';
+import Workout from './workout.model';
 import Invitation from './invitation.model';
 
-var newSession;
+var newWorkout;
 
-describe('Session API:', function () {
+describe('Workout API:', function () {
   var user;
   var token;
   var sports;
 
-  var session;
-  var genSession = function (data) {
+  var workout;
+  var genWorkout = function (data) {
     var doc = data || {
       createdBy: user,
-      name: 'New Session',
+      name: 'New Workout',
       sport: sports[0],
       dateStart: new Date(new Date().getTime() + 60000)
     }
-    session = new Session(doc);
-    return session;
+    workout = new Workout(doc);
+    return workout;
   };
 
   var invitation;
@@ -36,8 +36,8 @@ describe('Session API:', function () {
   };
 
   // Clear users before testing
-  before('Remove Session', function () {
-    return Session.removeAsync();
+  before('Remove Workout', function () {
+    return Workout.removeAsync();
   });
 
   // Get sports
@@ -80,12 +80,12 @@ describe('Session API:', function () {
     return User.removeAsync();
   });
 
-  describe('GET /api/sessions', function () {
-    var sessions;
+  describe('GET /api/workouts', function () {
+    var workouts;
 
     beforeEach(function (done) {
       request(app)
-        .get('/api/sessions')
+        .get('/api/workouts')
         .set('authorization', 'Bearer ' + token)
         .expect(200)
         .expect('Content-Type', /json/)
@@ -93,39 +93,39 @@ describe('Session API:', function () {
           if (err) {
             return done(err);
           }
-          sessions = res.body;
+          workouts = res.body;
           done();
         });
     });
 
     it('should respond with JSON array', function () {
-      sessions.should.be.instanceOf(Array);
+      workouts.should.be.instanceOf(Array);
     });
 
     describe('query', function () {
       beforeEach(function () {
-        genSession();
+        genWorkout();
         genInvitation();
       });
 
-      afterEach('Remove Sessions', function () {
-        return Session.removeAsync();
+      afterEach('Remove Workouts', function () {
+        return Workout.removeAsync();
       });
 
       describe('?next=true', function () {
         beforeEach(function () {
-          return session.saveAsync();
+          return workout.saveAsync();
         });
 
         it('should respond only one element', function (done) {
           request(app)
-            .get('/api/sessions?next=true')
+            .get('/api/workouts?next=true')
             .set('authorization', 'Bearer ' + token)
             .expect(200)
             .expect('Content-Type', /json/)
             .end((err, res) => {
               res.body.should.have.length(1);
-              res.body[0]._id.should.equal(session._id.toString());
+              res.body[0]._id.should.equal(workout._id.toString());
               done(err);
             });
         });
@@ -134,12 +134,12 @@ describe('Session API:', function () {
       describe('scope', function () {
         describe('?id', function () {
           beforeEach(function () {
-            return session.saveAsync();
+            return workout.saveAsync();
           });
 
           it('should respond only element id only', function (done) {
             request(app)
-              .get('/api/sessions?scope=id')
+              .get('/api/workouts?scope=id')
               .set('authorization', 'Bearer ' + token)
               .expect(200)
               .expect('Content-Type', /json/)
@@ -152,13 +152,13 @@ describe('Session API:', function () {
 
         describe('?invitation', function () {
           beforeEach(function () {
-            session.invitations = [invitation];
-            return session.saveAsync();
+            workout.invitations = [invitation];
+            return workout.saveAsync();
           });
 
           it('should respond only element id only', function (done) {
             request(app)
-              .get('/api/sessions?scope=invitation')
+              .get('/api/workouts?scope=invitation')
               .set('authorization', 'Bearer ' + token)
               .expect(200)
               .expect('Content-Type', /json/)
@@ -171,14 +171,14 @@ describe('Session API:', function () {
 
         describe('?filter', function () {
           beforeEach(function () {
-            session.invitations = [invitation];
-            return session.saveAsync();
+            workout.invitations = [invitation];
+            return workout.saveAsync();
           });
 
           describe('=unknown', function () {
             it('should respond one element', function (done) {
               request(app)
-                .get('/api/sessions?filter=unknown')
+                .get('/api/workouts?filter=unknown')
                 .set('authorization', 'Bearer ' + token)
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -190,10 +190,10 @@ describe('Session API:', function () {
 
             it('should respond zero element', function (done) {
               invitation.setAccepted();
-              session.invitations = [invitation];
-              session.saveAsync().then(function (result) {
+              workout.invitations = [invitation];
+              workout.saveAsync().then(function (result) {
                 request(app)
-                  .get('/api/sessions?filter=unknown')
+                  .get('/api/workouts?filter=unknown')
                   .set('authorization', 'Bearer ' + token)
                   .expect(200)
                   .expect('Content-Type', /json/)
@@ -208,7 +208,7 @@ describe('Session API:', function () {
           describe('=accepted', function () {
             it('should respond zero element', function (done) {
               request(app)
-                .get('/api/sessions?filter=accepted')
+                .get('/api/workouts?filter=accepted')
                 .set('authorization', 'Bearer ' + token)
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -220,10 +220,10 @@ describe('Session API:', function () {
 
             it('should respond one element', function (done) {
               invitation.setAccepted();
-              session.invitations = [invitation];
-              session.saveAsync().then(function (result) {
+              workout.invitations = [invitation];
+              workout.saveAsync().then(function (result) {
                 request(app)
-                  .get('/api/sessions?filter=accepted')
+                  .get('/api/workouts?filter=accepted')
                   .set('authorization', 'Bearer ' + token)
                   .expect(200)
                   .expect('Content-Type', /json/)
@@ -238,7 +238,7 @@ describe('Session API:', function () {
           describe('=refused', function () {
             it('should respond zero element', function (done) {
               request(app)
-                .get('/api/sessions?filter=refused')
+                .get('/api/workouts?filter=refused')
                 .set('authorization', 'Bearer ' + token)
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -250,10 +250,10 @@ describe('Session API:', function () {
 
             it('should respond one element', function (done) {
               invitation.setRefused();
-              session.invitations = [invitation];
-              session.saveAsync().then(function (result) {
+              workout.invitations = [invitation];
+              workout.saveAsync().then(function (result) {
                 request(app)
-                  .get('/api/sessions?filter=refused')
+                  .get('/api/workouts?filter=refused')
                   .set('authorization', 'Bearer ' + token)
                   .expect(200)
                   .expect('Content-Type', /json/)
@@ -269,13 +269,13 @@ describe('Session API:', function () {
     });
   });
 
-  describe('POST /api/sessions', function () {
+  describe('POST /api/workouts', function () {
     beforeEach(function (done) {
       request(app)
-        .post('/api/sessions')
+        .post('/api/workouts')
         .set('authorization', 'Bearer ' + token)
         .send({
-          name: 'New Session',
+          name: 'New Workout',
           sport: sports[0],
           dateStart: new Date(),
           dateStop: new Date()
@@ -286,22 +286,22 @@ describe('Session API:', function () {
           if (err) {
             return done(err);
           }
-          newSession = res.body;
+          newWorkout = res.body;
           done();
         });
     });
 
-    it('should respond with the newly created session', function () {
-      newSession.name.should.equal('New Session');
-      newSession.sport.should.equal(sports[0]._id.toString());
+    it('should respond with the newly created workout', function () {
+      newWorkout.name.should.equal('New Workout');
+      newWorkout.sport.should.equal(sports[0]._id.toString());
     });
 
     it('should respond error if no sport', function (done) {
       request(app)
-        .post('/api/sessions')
+        .post('/api/workouts')
         .set('authorization', 'Bearer ' + token)
         .send({
-          name: 'New Session',
+          name: 'New Workout',
           dateStart: new Date(),
           dateStop: new Date()
         })
@@ -311,10 +311,10 @@ describe('Session API:', function () {
     });
 
     it('should add invitation for creator', function () {
-      newSession.invitations.should.have.length(1);
-      newSession.invitations[0].should.have.property('state', 1);
-      newSession.invitations[0].should.have.property('userInvited', user._id.toString());
-      newSession.invitations[0].should.have.property('byUser', user._id.toString());
+      newWorkout.invitations.should.have.length(1);
+      newWorkout.invitations[0].should.have.property('state', 1);
+      newWorkout.invitations[0].should.have.property('userInvited', user._id.toString());
+      newWorkout.invitations[0].should.have.property('byUser', user._id.toString());
     });
 
     describe('/:id/invitation', function () {
@@ -330,7 +330,7 @@ describe('Session API:', function () {
 
       beforeEach(function (done) {
         request(app)
-          .post('/api/sessions/' + newSession._id + '/invitation')
+          .post('/api/workouts/' + newWorkout._id + '/invitation')
           .set('authorization', 'Bearer ' + token)
           .send({
             userInvited: secondUser._id,
@@ -339,18 +339,18 @@ describe('Session API:', function () {
           .expect(201)
           .expect('Content-Type', /json/)
           .end((err, res) => {
-            newSession = res.body;
+            newWorkout = res.body;
             done(err);
           });
       });
 
       it('should add an invitation', function () {
-        newSession.invitations.should.have.length(2);
+        newWorkout.invitations.should.have.length(2);
       });
 
       it('should respond 401 if user already added', function (done) {
         request(app)
-          .post('/api/sessions/' + newSession._id + '/invitation')
+          .post('/api/workouts/' + newWorkout._id + '/invitation')
           .set('authorization', 'Bearer ' + token)
           .send({
             userInvited: secondUser._id,
@@ -362,35 +362,35 @@ describe('Session API:', function () {
     });
   });
 
-  describe('GET /api/sessions/:id', function () {
-    var session;
+  describe('GET /api/workouts/:id', function () {
+    var workout;
 
     beforeEach(function (done) {
       request(app)
-        .get('/api/sessions/' + newSession._id)
+        .get('/api/workouts/' + newWorkout._id)
         .expect(200)
         .expect('Content-Type', /json/)
         .end((err, res) => {
           if (err) {
             return done(err);
           }
-          session = res.body;
+          workout = res.body;
           done();
         });
     });
 
     afterEach(function () {
-      session = {};
+      workout = {};
     });
 
-    it('should respond with the requested session', function () {
-      newSession.name.should.equal('New Session');
-      newSession.sport.should.equal(sports[0]._id.toString());
+    it('should respond with the requested workout', function () {
+      newWorkout.name.should.equal('New Workout');
+      newWorkout.sport.should.equal(sports[0]._id.toString());
     });
 
     it('should respond 500 if fake id', function (done) {
       request(app)
-        .get('/api/sessions/fakeId')
+        .get('/api/workouts/fakeId')
         .expect(500)
         .expect('Content-Type', /json/)
         .end(done);
@@ -398,15 +398,15 @@ describe('Session API:', function () {
 
   });
 
-  describe('PUT /api/sessions/:id', function () {
-    var updatedSession;
+  describe('PUT /api/workouts/:id', function () {
+    var updatedWorkout;
 
     beforeEach(function (done) {
       request(app)
-        .put('/api/sessions/' + newSession._id)
+        .put('/api/workouts/' + newWorkout._id)
         .send({
-          _id: newSession._id,
-          name: 'Updated Session',
+          _id: newWorkout._id,
+          name: 'Updated Workout',
           sport: sports[1]._id
         })
         .expect(200)
@@ -415,31 +415,31 @@ describe('Session API:', function () {
           if (err) {
             return done(err);
           }
-          updatedSession = res.body;
+          updatedWorkout = res.body;
           done();
         });
     });
 
     afterEach(function () {
-      updatedSession = {};
+      updatedWorkout = {};
     });
 
-    it('should respond with the updated session', function () {
-      updatedSession.name.should.equal('Updated Session');
-      updatedSession.sport.should.equal(sports[1]._id.toString());
+    it('should respond with the updated workout', function () {
+      updatedWorkout.name.should.equal('Updated Workout');
+      updatedWorkout.sport.should.equal(sports[1]._id.toString());
     });
 
     it('should update without id', function (done) {
       request(app)
-        .put('/api/sessions/' + newSession._id)
+        .put('/api/workouts/' + newWorkout._id)
         .send({
-          name: 'Updated Session2'
+          name: 'Updated Workout2'
         })
         .expect(200)
         .expect('Content-Type', /json/)
         .end(function (err, res) {
-          updatedSession = res.body;
-          updatedSession.name.should.equal('Updated Session2');
+          updatedWorkout = res.body;
+          updatedWorkout.name.should.equal('Updated Workout2');
           done();
         });
     });
@@ -448,30 +448,30 @@ describe('Session API:', function () {
     describe('/invitation/:invitationId', function () {
       beforeEach(function (done) {
         request(app)
-          .put('/api/sessions/' + newSession._id + '/invitation/' + updatedSession.invitations[0]._id)
+          .put('/api/workouts/' + newWorkout._id + '/invitation/' + updatedWorkout.invitations[0]._id)
           .send({
             state: 2
           })
           .expect(200)
           .expect('Content-Type', /json/)
           .end(function (err, res) {
-            updatedSession = res.body;
+            updatedWorkout = res.body;
             done();
           });
       });
 
-      it('should respond with the updated session', function () {
-        updatedSession.invitations[0].state.should.equal(2);
+      it('should respond with the updated workout', function () {
+        updatedWorkout.invitations[0].state.should.equal(2);
       });
     });
 
   });
 
-  describe('DELETE /api/sessions/:id', function () {
+  describe('DELETE /api/workouts/:id', function () {
 
     it('should respond with 204 on successful removal', function (done) {
       request(app)
-        .delete('/api/sessions/' + newSession._id)
+        .delete('/api/workouts/' + newWorkout._id)
         .expect(204)
         .end((err, res) => {
           if (err) {
@@ -481,9 +481,9 @@ describe('Session API:', function () {
         });
     });
 
-    it('should respond with 404 when session does not exist', function (done) {
+    it('should respond with 404 when workout does not exist', function (done) {
       request(app)
-        .delete('/api/sessions/' + newSession._id)
+        .delete('/api/workouts/' + newWorkout._id)
         .expect(404)
         .end((err, res) => {
           if (err) {
@@ -495,27 +495,27 @@ describe('Session API:', function () {
 
     describe('/invitation/invitationId', function () {
       beforeEach(function () {
-        genSession();
+        genWorkout();
         genInvitation();
-        session.invitations = [invitation];
-        return session.saveAsync();
+        workout.invitations = [invitation];
+        return workout.saveAsync();
       });
 
       it('should respond with 204 on successful removal', function (done) {
         request(app)
-          .delete('/api/sessions/' + session._id + '/invitation/' + invitation._id)
+          .delete('/api/workouts/' + workout._id + '/invitation/' + invitation._id)
           .expect(204)
           .end(done);
       });
 
       it('should remove the invitation', function (done) {
         request(app)
-          .delete('/api/sessions/' + session._id + '/invitation/' + invitation._id)
+          .delete('/api/workouts/' + workout._id + '/invitation/' + invitation._id)
           .expect(204)
           .end((err, res) => {
-            Session.findByIdAsync(session._id)
-              .then(function (session) {
-                session.invitations.should.have.length(0);
+            Workout.findByIdAsync(workout._id)
+              .then(function (workout) {
+                workout.invitations.should.have.length(0);
                 done(err);
               });
           });
