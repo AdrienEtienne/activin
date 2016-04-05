@@ -6,12 +6,12 @@
 'use strict';
 import User from '../api/user/user.model';
 import Sport from '../api/sport/sport.model';
-import Session from '../api/session/session.model';
-import Invitation from '../api/session/invitation.model';
+import Workout from '../api/workout/workout.model';
+import Invitation from '../api/workout/invitation.model';
 
 var user1, user2;
 var sports;
-var session1, session2;
+var workout1, workout2;
 
 function findSports() {
   return Sport.findAsync()
@@ -50,12 +50,12 @@ function createUsers() {
     });
 }
 
-function createSessions() {
-  return Session.find({}).removeAsync()
+function createWorkouts() {
+  return Workout.find({}).removeAsync()
     .then(() => {
-      return Session.createAsync({
+      return Workout.createAsync({
           createdBy: user2._id,
-          name: 'Session 1',
+          name: 'Workout 1',
           sport: sports[0],
           dateStart: new Date(new Date().getTime() - 60000),
           invitations: [new Invitation({
@@ -69,7 +69,7 @@ function createSessions() {
           })]
         }, {
           createdBy: user2._id,
-          name: 'Session 2',
+          name: 'Workout 2',
           sport: sports[0],
           dateStart: new Date(new Date().getTime() + 600000),
           invitations: [new Invitation({
@@ -82,13 +82,13 @@ function createSessions() {
             state: 0
           })]
         })
-        .then((sessions) => {
-          session1 = sessions[0];
-          session2 = sessions[1];
-          console.log('finished populating sessions');
+        .then((workouts) => {
+          workout1 = workouts[0];
+          workout2 = workouts[1];
+          console.log('finished populating workouts');
         })
         .catch(err => {
-          console.log('error populating sessions');
+          console.log('error populating workouts');
         });
     });
 }
@@ -96,5 +96,5 @@ function createSessions() {
 setTimeout(function () {
   findSports()
     .then(createUsers)
-    .then(createSessions);
+    .then(createWorkouts);
 }, 1000);
