@@ -6,9 +6,16 @@
 Provide a way to find partners for sport sessions.
 You will can to find other active people, schedule a session, make friends.
 
+## Link production site
+
+[ActivIn](http://activin-aenode.rhcloud.com/)
+
 ## Features
 
  * Connexion as user
+ * Choose your sports
+ * Add your favorite places
+ * Find partners neer your position
 
 ## Getting Started
 
