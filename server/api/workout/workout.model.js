@@ -4,7 +4,7 @@ var mongoose = require('bluebird').promisifyAll(require('mongoose'));
 import Invitation from './invitation.model';
 var InvitationSchema = Invitation.schema
 
-var SessionSchema = new mongoose.Schema({
+var WorkoutSchema = new mongoose.Schema({
 	name: {
 		type: String,
 		required: true
@@ -29,4 +29,4 @@ var SessionSchema = new mongoose.Schema({
 	invitations: [InvitationSchema]
 });
 
-export default mongoose.model('Session', SessionSchema);
+export default mongoose.model('Workout', WorkoutSchema);

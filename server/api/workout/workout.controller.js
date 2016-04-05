@@ -1,16 +1,16 @@
 /**
  * Using Rails-like standard naming convention for endpoints.
- * GET     /api/sessions              ->  index
- * POST    /api/sessions              ->  create
- * GET     /api/sessions/:id          ->  show
- * PUT     /api/sessions/:id          ->  update
- * DELETE  /api/sessions/:id          ->  destroy
+ * GET     /api/workouts              ->  index
+ * POST    /api/workouts              ->  create
+ * GET     /api/workouts/:id          ->  show
+ * PUT     /api/workouts/:id          ->  update
+ * DELETE  /api/workouts/:id          ->  destroy
  */
 
 'use strict';
 
 import _ from 'lodash';
-import Session from './session.model';
+import Workout from './workout.model';
 import Invitation from './invitation.model';
 
 function respondWithResult(res, statusCode) {
@@ -122,7 +122,7 @@ function handleError(res, statusCode) {
   };
 }
 
-// Gets a list of Sessions
+// Gets a list of Workouts
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
   var scope = null;
@@ -133,7 +133,7 @@ export function index(req, res) {
     scope = '-invitations.userInvited -invitations.byUser';
   }
 
-  var query = Session.find({
+  var query = Workout.find({
     createdBy: req.user._id
   });
 
@@ -163,15 +163,15 @@ export function index(req, res) {
     .catch(handleError(res));
 }
 
-// Gets a single Session from the DB
+// Gets a single Workout from the DB
 export function show(req, res) {
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Creates a new Session in the DB
+// Creates a new Workout in the DB
 export function create(req, res) {
   var userId = req.user._id;
   var body = req.body;
@@ -184,14 +184,14 @@ export function create(req, res) {
   invitation.setAccepted();
   body.invitations = [invitation];
 
-  Session.createAsync(body)
+  Workout.createAsync(body)
     .then(respondWithResult(res, 201))
     .catch(handleError(res));
 }
 
-// Creates a new Session in the DB
+// Creates a new Workout in the DB
 export function createInvitation(req, res) {
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(addInvitation(req.body))
     .then(handleInvitationError(res))
@@ -199,38 +199,38 @@ export function createInvitation(req, res) {
     .catch(handleError(res, 401));
 }
 
-// Updates an existing Session in the DB
+// Updates an existing Workout in the DB
 export function update(req, res) {
   if (req.body._id) {
     delete req.body._id;
   }
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(saveUpdates(req.body))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Updates an existing Session in the DB
+// Updates an existing Workout in the DB
 export function updateInvitation(req, res) {
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(saveUpdatesInvitation(req.params.invitationId, req.body))
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
-// Deletes a Session from the DB
+// Deletes a Workout from the DB
 export function destroy(req, res) {
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
     .catch(handleError(res));
 }
 
-// Deletes a Session from the DB
+// Deletes a Workout from the DB
 export function destroyInvitation(req, res) {
-  Session.findByIdAsync(req.params.id)
+  Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
     .then(removeInvitation(res, req.params.invitationId))
     .catch(handleError(res));

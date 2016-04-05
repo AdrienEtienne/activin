@@ -2,7 +2,7 @@
 
 var express = require('express');
 import * as auth from '../../auth/auth.service';
-import * as controller from './session.controller';
+import * as controller from './workout.controller';
 
 var router = express.Router();
 
