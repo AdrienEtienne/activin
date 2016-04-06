@@ -22,6 +22,17 @@ function respondWithResult(res, statusCode) {
   };
 }
 
+function findInvitation(userId) {
+  return function (workout) {
+    var invitation = _.find(workout.invitations, function (invit) {
+      return invit.userInvited.toString() === userId.toString();
+    });
+    if (invitation) {
+      return invitation;
+    }
+  };
+}
+
 function saveUpdates(updates) {
   return function (entity) {
     var updated = _.merge(entity, updates);
@@ -166,6 +177,16 @@ export function index(req, res) {
 // Gets a single Workout from the DB
 export function show(req, res) {
   Workout.findByIdAsync(req.params.id)
+    .then(handleEntityNotFound(res))
+    .then(respondWithResult(res))
+    .catch(handleError(res));
+}
+
+// Gets a single invitation from the DB
+export function showInvitation(req, res) {
+  Workout.findByIdAsync(req.params.id)
+    .then(handleEntityNotFound(res))
+    .then(findInvitation(req.user._id))
     .then(handleEntityNotFound(res))
     .then(respondWithResult(res))
     .catch(handleError(res));

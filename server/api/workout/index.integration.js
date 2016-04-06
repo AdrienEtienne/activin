@@ -11,6 +11,7 @@ var authServiceStub = {
 var workoutCtrlStub = {
   index: 'workoutCtrl.index',
   show: 'workoutCtrl.show',
+  showInvitation: 'workoutCtrl.showInvitation',
   create: 'workoutCtrl.create',
   createInvitation: 'workoutCtrl.createInvitation',
   update: 'workoutCtrl.update',
@@ -62,6 +63,11 @@ describe('Workout API Router:', function () {
         .should.have.been.calledOnce;
     });
 
+    it('should route to workout.controller.showInvitation', function () {
+      routerStub.get
+        .withArgs('/:id/invitation', 'authService.isAuthenticated', 'workoutCtrl.showInvitation')
+        .should.have.been.calledOnce;
+    });
   });
 
   describe('POST /api/workouts', function () {

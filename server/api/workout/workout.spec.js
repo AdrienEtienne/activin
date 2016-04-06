@@ -396,6 +396,44 @@ describe('Workout API:', function () {
         .end(done);
     });
 
+    describe('GET /api/workouts/:id/invitation', function () {
+      var invitation;
+
+      beforeEach(function (done) {
+        request(app)
+          .get('/api/workouts/' + newWorkout._id + '/invitation')
+          .set('authorization', 'Bearer ' + token)
+          .expect(200)
+          .expect('Content-Type', /json/)
+          .end((err, res) => {
+            if (err) {
+              return done(err);
+            }
+            invitation = res.body;
+            done();
+          });
+      });
+
+      afterEach(function () {
+        invitation = {};
+      });
+
+      it('should respond with the requested workout', function () {
+        invitation._id.should.equal(newWorkout.invitations[0]._id.toString());
+      });
+
+      it('should respond 404 if no workout', function (done) {
+        genWorkout()
+          .saveAsync()
+          .then(function (workout) {
+            request(app)
+              .get('/api/workouts/' + workout[0]._id + '/invitation')
+              .set('authorization', 'Bearer ' + token)
+              .expect(404)
+              .end(done);
+          });
+      });
+    });
   });
 
   describe('PUT /api/workouts/:id', function () {
@@ -443,7 +481,6 @@ describe('Workout API:', function () {
           done();
         });
     });
-
 
     describe('/invitation/:invitationId', function () {
       beforeEach(function (done) {
@@ -522,7 +559,5 @@ describe('Workout API:', function () {
       });
     });
   });
-
-
 
 });
