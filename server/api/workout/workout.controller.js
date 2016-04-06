@@ -144,9 +144,19 @@ export function index(req, res) {
     scope = '-invitations.userInvited -invitations.byUser';
   }
 
-  var query = Workout.find({
-    createdBy: req.user._id
-  });
+  var query = null;
+  if (req.query.filter) {
+    var invitationStates = Invitation.filterState(req.query.filter);
+    query = Workout.find().where({
+      'invitations.state': {
+        '$in': invitationStates
+      }
+    });
+  } else {
+    query = Workout.find({
+      createdBy: req.user._id
+    });
+  }
 
   if (scope) {
     query = query.select(scope);
@@ -156,15 +166,6 @@ export function index(req, res) {
     query = query.where({
       "dateStart": {
         "$gte": new Date()
-      }
-    });
-  }
-
-  if (req.query.filter) {
-    var invitationStates = Invitation.filterState(req.query.filter);
-    query = query.where({
-      'invitations.state': {
-        '$in': invitationStates
       }
     });
   }
