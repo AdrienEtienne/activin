@@ -142,9 +142,13 @@ export function index(req, res) {
   if (req.query.filter) {
     var invitationStates = Invitation.filterState(req.query.filter);
     query = Workout.find().where({
-      'invitations.userInvited': req.user._id,
-      'invitations.state': {
-        '$in': invitationStates
+      'invitations': {
+        '$elemMatch': {
+          userInvited: req.user._id,
+          state: {
+            '$in': invitationStates
+          }
+        }
       }
     });
   } else {

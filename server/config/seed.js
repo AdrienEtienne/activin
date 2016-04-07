@@ -57,7 +57,7 @@ function createWorkouts() {
           createdBy: user2._id,
           name: 'Workout 1',
           sport: sports[0],
-          dateStart: new Date(new Date().getTime() - 60000),
+          dateStart: new Date(new Date().getTime() - 6000000),
           invitations: [new Invitation({
             userInvited: user2,
             byUser: user2,
@@ -71,7 +71,7 @@ function createWorkouts() {
           createdBy: user2._id,
           name: 'Workout 2',
           sport: sports[0],
-          dateStart: new Date(new Date().getTime() + 600000),
+          dateStart: new Date(new Date().getTime() + 6000000),
           invitations: [new Invitation({
             userInvited: user2,
             byUser: user2,
