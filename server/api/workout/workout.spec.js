@@ -112,22 +112,56 @@ describe('Workout API:', function () {
         return Workout.removeAsync();
       });
 
-      describe('?next=true', function () {
-        beforeEach(function () {
-          return workout.saveAsync();
+      describe('?next', function () {
+        describe('=true', function () {
+          beforeEach(function () {
+            return workout.saveAsync();
+          });
+
+          it('should respond only one element', function (done) {
+            request(app)
+              .get('/api/workouts?next=true')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(1);
+                res.body[0]._id.should.equal(workout._id.toString());
+                done(err);
+              });
+          });
         });
 
-        it('should respond only one element', function (done) {
-          request(app)
-            .get('/api/workouts?next=true')
-            .set('authorization', 'Bearer ' + token)
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-              res.body.should.have.length(1);
-              res.body[0]._id.should.equal(workout._id.toString());
-              done(err);
-            });
+        describe('=false', function () {
+          beforeEach(function () {
+            workout.dateStart = new Date(new Date().getTime() - 60000);
+            return workout.saveAsync();
+          });
+
+          it('should respond only one element', function (done) {
+            request(app)
+              .get('/api/workouts?next=false')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(1);
+                res.body[0]._id.should.equal(workout._id.toString());
+                done(err);
+              });
+          });
+
+          it('should respond no element', function (done) {
+            request(app)
+              .get('/api/workouts?next=true')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(0);
+                done(err);
+              });
+          });
         });
       });
 

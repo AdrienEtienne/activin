@@ -136,6 +136,7 @@ function handleError(res, statusCode) {
 // Gets a list of Workouts
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
+  var past = req.query.next === 'false' ? true : false;
 
   var query = null;
   if (req.query.filter) {
@@ -172,6 +173,14 @@ export function index(req, res) {
     query = query.where({
       "dateStart": {
         "$gte": new Date()
+      }
+    });
+  }
+
+  if (past) {
+    query = query.where({
+      "dateStart": {
+        "$lte": new Date()
       }
     });
   }
