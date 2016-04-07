@@ -136,18 +136,13 @@ function handleError(res, statusCode) {
 // Gets a list of Workouts
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
-  var scope = null;
-
-  if (req.query.scope && req.query.scope === 'id') {
-    scope = '_id';
-  } else if (req.query.scope && req.query.scope === 'invitation') {
-    scope = '-invitations.userInvited -invitations.byUser';
-  }
+  var past = req.query.next === 'false' ? true : false;
 
   var query = null;
   if (req.query.filter) {
     var invitationStates = Invitation.filterState(req.query.filter);
     query = Workout.find().where({
+      'invitations.userInvited': req.user._id,
       'invitations.state': {
         '$in': invitationStates
       }
@@ -158,14 +153,34 @@ export function index(req, res) {
     });
   }
 
-  if (scope) {
-    query = query.select(scope);
+  var scope = req.query.scope || '';
+
+  if (scope.indexOf('id') !== -1) {
+    query = query.select('_id');
+  } else if (scope.length) {
+    if (scope.indexOf('invitation') !== -1) {
+      query = query.select('-invitations.userInvited -invitations.byUser');
+    }
+    if (scope.indexOf('user') !== -1) {
+      query = query.populate('createdBy');
+    }
+    if (scope.indexOf('sport') !== -1) {
+      query = query.populate('sport');
+    }
   }
 
   if (next) {
     query = query.where({
       "dateStart": {
         "$gte": new Date()
+      }
+    });
+  }
+
+  if (past) {
+    query = query.where({
+      "dateStart": {
+        "$lte": new Date()
       }
     });
   }

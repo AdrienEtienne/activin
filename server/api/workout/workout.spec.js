@@ -112,26 +112,60 @@ describe('Workout API:', function () {
         return Workout.removeAsync();
       });
 
-      describe('?next=true', function () {
-        beforeEach(function () {
-          return workout.saveAsync();
+      describe('?next', function () {
+        describe('=true', function () {
+          beforeEach(function () {
+            return workout.saveAsync();
+          });
+
+          it('should respond only one element', function (done) {
+            request(app)
+              .get('/api/workouts?next=true')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(1);
+                res.body[0]._id.should.equal(workout._id.toString());
+                done(err);
+              });
+          });
         });
 
-        it('should respond only one element', function (done) {
-          request(app)
-            .get('/api/workouts?next=true')
-            .set('authorization', 'Bearer ' + token)
-            .expect(200)
-            .expect('Content-Type', /json/)
-            .end((err, res) => {
-              res.body.should.have.length(1);
-              res.body[0]._id.should.equal(workout._id.toString());
-              done(err);
-            });
+        describe('=false', function () {
+          beforeEach(function () {
+            workout.dateStart = new Date(new Date().getTime() - 60000);
+            return workout.saveAsync();
+          });
+
+          it('should respond only one element', function (done) {
+            request(app)
+              .get('/api/workouts?next=false')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(1);
+                res.body[0]._id.should.equal(workout._id.toString());
+                done(err);
+              });
+          });
+
+          it('should respond no element', function (done) {
+            request(app)
+              .get('/api/workouts?next=true')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(0);
+                done(err);
+              });
+          });
         });
       });
 
-      describe('scope', function () {
+      describe('?scope', function () {
         describe('?id', function () {
           beforeEach(function () {
             return workout.saveAsync();
@@ -150,7 +184,7 @@ describe('Workout API:', function () {
           });
         });
 
-        describe('?invitation', function () {
+        describe('=invitation', function () {
           beforeEach(function () {
             workout.invitations = [invitation];
             return workout.saveAsync();
@@ -169,16 +203,117 @@ describe('Workout API:', function () {
           });
         });
 
-        describe('?filter', function () {
+        describe('=user', function () {
+          beforeEach(function () {
+            return workout.saveAsync();
+          });
+
+          it('should respond with user info', function (done) {
+            request(app)
+              .get('/api/workouts?scope=user')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body[0].createdBy.name.should.equal(user.name);
+                done(err);
+              });
+          });
+        });
+
+        describe('=sport', function () {
+          beforeEach(function () {
+            return workout.saveAsync();
+          });
+
+          it('should respond with sport', function (done) {
+            request(app)
+              .get('/api/workouts?scope=sport')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body[0].sport.name.should.equal(sports[0].name);
+                done(err);
+              });
+          });
+        });
+
+        describe('=invitation', function () {
           beforeEach(function () {
             workout.invitations = [invitation];
             return workout.saveAsync();
           });
 
-          describe('=unknown', function () {
-            it('should respond one element', function (done) {
+          it('should respond only element id only', function (done) {
+            request(app)
+              .get('/api/workouts?scope=invitation')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body[0].invitations[0]._id.should.equal(invitation._id.toString());
+                done(err);
+              });
+          });
+        });
+      });
+
+      describe('?filter', function () {
+        beforeEach(function () {
+          workout.invitations = [invitation];
+          return workout.saveAsync();
+        });
+
+        describe('=unknown', function () {
+          it('should respond one element', function (done) {
+            request(app)
+              .get('/api/workouts?filter=unknown')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(1);
+                done(err);
+              });
+          });
+
+          it('should respond zero element', function (done) {
+            invitation.setAccepted();
+            workout.invitations = [invitation];
+            workout.saveAsync().then(function (result) {
               request(app)
                 .get('/api/workouts?filter=unknown')
+                .set('authorization', 'Bearer ' + token)
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .end((err, res) => {
+                  res.body.should.have.length(0);
+                  done(err);
+                });
+            });
+          });
+        });
+
+        describe('=accepted', function () {
+          it('should respond zero element', function (done) {
+            request(app)
+              .get('/api/workouts?filter=accepted')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(0);
+                done(err);
+              });
+          });
+
+          it('should respond one element', function (done) {
+            invitation.setAccepted();
+            workout.invitations = [invitation];
+            workout.saveAsync().then(function (result) {
+              request(app)
+                .get('/api/workouts?filter=accepted')
                 .set('authorization', 'Bearer ' + token)
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -187,81 +322,35 @@ describe('Workout API:', function () {
                   done(err);
                 });
             });
+          });
+        });
 
-            it('should respond zero element', function (done) {
-              invitation.setAccepted();
-              workout.invitations = [invitation];
-              workout.saveAsync().then(function (result) {
-                request(app)
-                  .get('/api/workouts?filter=unknown')
-                  .set('authorization', 'Bearer ' + token)
-                  .expect(200)
-                  .expect('Content-Type', /json/)
-                  .end((err, res) => {
-                    res.body.should.have.length(0);
-                    done(err);
-                  });
+        describe('=refused', function () {
+          it('should respond zero element', function (done) {
+            request(app)
+              .get('/api/workouts?filter=refused')
+              .set('authorization', 'Bearer ' + token)
+              .expect(200)
+              .expect('Content-Type', /json/)
+              .end((err, res) => {
+                res.body.should.have.length(0);
+                done(err);
               });
-            });
           });
 
-          describe('=accepted', function () {
-            it('should respond zero element', function (done) {
-              request(app)
-                .get('/api/workouts?filter=accepted')
-                .set('authorization', 'Bearer ' + token)
-                .expect(200)
-                .expect('Content-Type', /json/)
-                .end((err, res) => {
-                  res.body.should.have.length(0);
-                  done(err);
-                });
-            });
-
-            it('should respond one element', function (done) {
-              invitation.setAccepted();
-              workout.invitations = [invitation];
-              workout.saveAsync().then(function (result) {
-                request(app)
-                  .get('/api/workouts?filter=accepted')
-                  .set('authorization', 'Bearer ' + token)
-                  .expect(200)
-                  .expect('Content-Type', /json/)
-                  .end((err, res) => {
-                    res.body.should.have.length(1);
-                    done(err);
-                  });
-              });
-            });
-          });
-
-          describe('=refused', function () {
-            it('should respond zero element', function (done) {
+          it('should respond one element', function (done) {
+            invitation.setRefused();
+            workout.invitations = [invitation];
+            workout.saveAsync().then(function (result) {
               request(app)
                 .get('/api/workouts?filter=refused')
                 .set('authorization', 'Bearer ' + token)
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .end((err, res) => {
-                  res.body.should.have.length(0);
+                  res.body.should.have.length(1);
                   done(err);
                 });
-            });
-
-            it('should respond one element', function (done) {
-              invitation.setRefused();
-              workout.invitations = [invitation];
-              workout.saveAsync().then(function (result) {
-                request(app)
-                  .get('/api/workouts?filter=refused')
-                  .set('authorization', 'Bearer ' + token)
-                  .expect(200)
-                  .expect('Content-Type', /json/)
-                  .end((err, res) => {
-                    res.body.should.have.length(1);
-                    done(err);
-                  });
-              });
             });
           });
         });
