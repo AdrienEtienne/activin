@@ -355,6 +355,36 @@ describe('Workout API:', function () {
           });
         });
       });
+
+      describe('?sports', function () {
+        beforeEach(function () {
+          return workout.saveAsync();
+        });
+
+        it('should respond one sport', function (done) {
+          request(app)
+            .get('/api/workouts?sports=' + [workout.sport._id.toString()])
+            .set('authorization', 'Bearer ' + token)
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+              res.body.should.have.length(1);
+              done(err);
+            });
+        });
+
+        it('should respond zero element if sport not matching', function (done) {
+          request(app)
+            .get('/api/workouts?sports=' + [sports[2]._id.toString()])
+            .set('authorization', 'Bearer ' + token)
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .end((err, res) => {
+              res.body.should.have.length(0);
+              done(err);
+            });
+        });
+      });
     });
   });
 

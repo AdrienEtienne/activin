@@ -137,6 +137,7 @@ function handleError(res, statusCode) {
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
   var past = req.query.next === 'false' ? true : false;
+  var sports = req.query.sports ? req.query.sports.split(',') : null;
 
   var query = null;
   if (req.query.filter) {
@@ -185,6 +186,15 @@ export function index(req, res) {
     query = query.where({
       "dateStart": {
         "$lte": new Date()
+      }
+    });
+  }
+
+  if (sports) {
+    console.log(sports);
+    query = query.where({
+      "sport": {
+        "$in": sports
       }
     });
   }
