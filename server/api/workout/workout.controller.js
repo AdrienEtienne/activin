@@ -61,8 +61,9 @@ function saveUpdatesInvitation(invitationId, updates) {
   };
 }
 
-function addInvitation(invitation) {
+function addInvitation(invitation, byUser) {
   var newInvitation = new Invitation(invitation);
+  newInvitation.byUser = byUser;
 
   return function (entity) {
     var found = _.find(entity.invitations, function (invit) {
@@ -244,7 +245,7 @@ export function create(req, res) {
 export function createInvitation(req, res) {
   Workout.findByIdAsync(req.params.id)
     .then(handleEntityNotFound(res))
-    .then(addInvitation(req.body))
+    .then(addInvitation(req.body, req.user._id))
     .then(handleInvitationError(res))
     .then(respondWithResult(res, 201))
     .catch(handleError(res, 401));

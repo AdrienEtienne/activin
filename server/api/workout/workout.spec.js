@@ -452,8 +452,7 @@ describe('Workout API:', function () {
           .post('/api/workouts/' + newWorkout._id + '/invitation')
           .set('authorization', 'Bearer ' + token)
           .send({
-            userInvited: secondUser._id,
-            byUser: user._id
+            userInvited: secondUser._id
           })
           .expect(201)
           .expect('Content-Type', /json/)
@@ -472,8 +471,7 @@ describe('Workout API:', function () {
           .post('/api/workouts/' + newWorkout._id + '/invitation')
           .set('authorization', 'Bearer ' + token)
           .send({
-            userInvited: secondUser._id,
-            byUser: user._id
+            userInvited: secondUser._id
           })
           .expect(401)
           .end(done);
