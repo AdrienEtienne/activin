@@ -62,6 +62,9 @@ export function index(req, res) {
     });
   }
 
+
+  query = query.populate('sports');
+
   query.execAsync()
     .then(function (users) {
       var results = _.map(users, function (user) {
