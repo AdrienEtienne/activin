@@ -120,7 +120,7 @@ function handleEntityNotFound(res) {
 function handleInvitationError(res) {
   return function (entity) {
     if (!entity) {
-      res.status(401).end();
+      res.status(403).json(new Error('Invitation already sent'));
       return null;
     }
     return entity;
@@ -138,7 +138,7 @@ function handleError(res, statusCode) {
 export function index(req, res) {
   var next = req.query.next === 'true' ? true : false;
   var past = req.query.next === 'false' ? true : false;
-  var sports = req.query.sports ? req.query.sports.split(',') : null;
+  var sports = req.query.sports ? req.query.sports : null;
 
   var query = null;
   if (req.query.filter) {
@@ -192,7 +192,6 @@ export function index(req, res) {
   }
 
   if (sports) {
-    console.log(sports);
     query = query.where({
       "sport": {
         "$in": sports

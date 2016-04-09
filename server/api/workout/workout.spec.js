@@ -473,7 +473,7 @@ describe('Workout API:', function () {
           .send({
             userInvited: secondUser._id
           })
-          .expect(401)
+          .expect(403)
           .end(done);
       });
     });
